@@ -47,6 +47,76 @@ impl Piece {
             ]
         }
     }
+
+    fn make_j() -> Piece {
+        return Piece {
+            pattern: 'J',
+            position: Vector2 { x: 0, y: 0 },
+            spawn_offset: Vector2 { x: 1, y: 1 },
+            blocks: [
+                Vector2 { x: 0, y: -1 },
+                Vector2 { x: 0, y: 0 },
+                Vector2 { x: 0, y: 1 },
+                Vector2 { x: -1, y: 1 },
+            ]
+        }
+    }
+
+    fn make_s() -> Piece {
+        return Piece {
+            pattern: 'S',
+            position: Vector2 { x: 0, y: 0 },
+            spawn_offset: Vector2 { x: 1, y: 0 },
+            blocks: [
+                Vector2 { x: 1, y: 0 },
+                Vector2 { x: 0, y: 0 },
+                Vector2 { x: 0, y: 1 },
+                Vector2 { x: -1, y: 1 },
+            ]
+        }
+    }
+
+    fn make_z() -> Piece {
+        return Piece {
+            pattern: 'Z',
+            position: Vector2 { x: 0, y: 0 },
+            spawn_offset: Vector2 { x: 1, y: 0 },
+            blocks: [
+                Vector2 { x: -1, y: 0 },
+                Vector2 { x: 0, y: 0 },
+                Vector2 { x: 0, y: 1 },
+                Vector2 { x: 1, y: 1 },
+            ]
+        }
+    }
+
+    fn make_i() -> Piece {
+        return Piece {
+            pattern: 'I',
+            position: Vector2 { x: 0, y: 0 },
+            spawn_offset: Vector2 { x: 1, y: 0 },
+            blocks: [
+                Vector2 { x: -1, y: 0 },
+                Vector2 { x: 0, y: 0 },
+                Vector2 { x: 1, y: 0 },
+                Vector2 { x: 2, y: 0 },
+            ]
+        }
+    }
+
+    fn make_t() -> Piece {
+        return Piece {
+            pattern: 'T',
+            position: Vector2 { x: 0, y: 0 },
+            spawn_offset: Vector2 { x: 1, y: 0 },
+            blocks: [
+                Vector2 { x: -1, y: 0 },
+                Vector2 { x: 0, y: 0 },
+                Vector2 { x: 1, y: 0 },
+                Vector2 { x: 0, y: 1 },
+            ]
+        }
+    }
 }
 
 struct Board {
@@ -70,12 +140,12 @@ fn main() {
     let mut state_changed: bool = false;
 
     let mut board: Board = Board {
-        blocks: [[Block { filled: false, pattern: ' ' }; 10]; 20],
+        blocks: [ [Block { filled: false, pattern: ' ' }; 10]; 20],
     };
 
     let device_state = DeviceState::new();
 
-    let mut square: Piece = Piece::make_square();
+    let mut active_piece: Piece = spawn_next_piece();
 
     // print_board(&board, &square);
 
@@ -98,17 +168,17 @@ fn main() {
                 key_is_pressed = true;
 
                 if key.eq(&Keycode::Left) {
-                    move_left(&mut square, &board);
+                    move_left(&mut active_piece, &board);
                     state_changed = true;
                 }
 
                 if key.eq(&Keycode::Right) {
-                    move_right(&mut square, &board);
+                    move_right(&mut active_piece, &board);
                     state_changed = true;
                 }
 
                 if key.eq(&Keycode::Down) {
-                    move_down(&mut square, &mut board);
+                    move_down(&mut active_piece, &mut board);
                     state_changed = true;
                 }
             }
@@ -116,14 +186,21 @@ fn main() {
 
         if tick_threshold > 1000000 {
             tick_threshold -= 1000000;
-            move_down_and_stick(&mut square, &mut board);
+            move_down_and_stick(&mut active_piece, &mut board);
             state_changed = true;
         }
 
         if state_changed {
-            print_board(&board, &square);
+            print_board(&board, &active_piece);
         }
     }
+}
+
+fn spawn_next_piece() -> Piece {
+    let mut piece = Piece::make_t();
+    piece.position.y = 0 + piece.spawn_offset.y;
+    piece.position.x = 0 + piece.spawn_offset.x;
+    return piece;
 }
 
 fn move_left(active_piece: &mut Piece, board: &Board) {
@@ -169,7 +246,8 @@ fn move_down_and_stick(active_piece: &mut Piece, board: &mut Board) {
         board.blocks[(active_piece.position.y + active_piece.blocks[2].y) as usize][(active_piece.position.x + active_piece.blocks[2].x) as usize].pattern = active_piece.pattern;
         board.blocks[(active_piece.position.y + active_piece.blocks[3].y) as usize][(active_piece.position.x + active_piece.blocks[3].x) as usize].pattern = active_piece.pattern;
 
-        *active_piece = Piece::make_l();
+
+        *active_piece = spawn_next_piece();
 
         active_piece.position.y = 0 + active_piece.spawn_offset.y;
         active_piece.position.x = 0 + active_piece.spawn_offset.x;
