@@ -2,10 +2,12 @@ use std::io::{stdin, stdout};
 use crossterm::{execute};
 use crossterm::cursor::{MoveLeft, MoveUp, Hide, Show};
 use std::{time};
+use std::panic::PanicInfo;
 use crossterm::event::KeyCode;
 use crossterm::terminal::{Clear, ClearType};
 use device_query::{DeviceEvents, DeviceQuery, DeviceState, Keycode};
 use device_query::Keycode::Left;
+use rand::Rng;
 
 struct Vector2 {
     x: i8,
@@ -197,10 +199,25 @@ fn main() {
 }
 
 fn spawn_next_piece() -> Piece {
-    let mut piece = Piece::make_t();
+    let mut piece = make_random_piece();
     piece.position.y = 0 + piece.spawn_offset.y;
     piece.position.x = 0 + piece.spawn_offset.x;
     return piece;
+}
+
+fn make_random_piece() -> Piece {
+    let mut rng = rand::thread_rng();
+    let number = rng.gen_range(0..6);
+    match number {
+        0 => Piece::make_square(),
+        1 => Piece::make_i(),
+        2 => Piece::make_j(),
+        3 => Piece::make_l(),
+        4 => Piece::make_s(),
+        5 => Piece::make_t(),
+        6 => Piece::make_z(),
+        _ => Piece::make_square(),
+    }
 }
 
 fn move_left(active_piece: &mut Piece, board: &Board) {
