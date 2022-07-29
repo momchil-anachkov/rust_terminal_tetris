@@ -19,7 +19,14 @@ struct Square {
 }
 
 struct Board {
-    blocks: [[char; 10]; 20],
+    blocks: [[Block; 10]; 20],
+}
+
+#[derive(Copy)]
+#[derive(Clone)]
+struct Block {
+    filled: bool,
+    pattern: char,
 }
 
 fn main() {
@@ -32,7 +39,7 @@ fn main() {
     let mut state_changed: bool = false;
 
     let mut board: Board = Board {
-        blocks: [[' '; 10]; 20],
+        blocks: [[Block { filled: false, pattern: ' ' }; 10]; 20],
     };
 
     let device_state = DeviceState::new();
@@ -78,12 +85,16 @@ fn main() {
                     state_changed = true;
                 }
 
+                if key.eq(&Keycode::Down) {
+                    move_down(&mut square, &mut board);
+                    state_changed = true;
+                }
             }
         }
 
         if tick_threshold > 1000000 {
             tick_threshold -= 1000000;
-            square.position.y += 1;
+            move_down_and_stick(&mut square, &mut board);
             state_changed = true;
         }
 
@@ -115,6 +126,52 @@ fn move_right(active_piece: &mut Square) {
     }
 }
 
+fn move_down(active_piece: &mut Square, board: &mut Board) {
+    active_piece.position.y += 1;
+
+    if
+        active_piece.position.y + active_piece.blocks[0].y > 19 ||
+        active_piece.position.y + active_piece.blocks[1].y > 19 ||
+        active_piece.position.y + active_piece.blocks[2].y > 19 ||
+        active_piece.position.y + active_piece.blocks[3].y > 19 ||
+        board.blocks[(active_piece.position.y + active_piece.blocks[0].y) as usize][(active_piece.position.x + active_piece.blocks[0].x) as usize].filled ||
+        board.blocks[(active_piece.position.y + active_piece.blocks[1].y) as usize][(active_piece.position.x + active_piece.blocks[1].x) as usize].filled ||
+        board.blocks[(active_piece.position.y + active_piece.blocks[2].y) as usize][(active_piece.position.x + active_piece.blocks[2].x) as usize].filled ||
+        board.blocks[(active_piece.position.y + active_piece.blocks[3].y) as usize][(active_piece.position.x + active_piece.blocks[3].x) as usize].filled
+    {
+        active_piece.position.y -= 1;
+    }
+}
+
+fn move_down_and_stick(active_piece: &mut Square, board: &mut Board) {
+    active_piece.position.y += 1;
+
+    if
+        active_piece.position.y + active_piece.blocks[0].y > 19 ||
+        active_piece.position.y + active_piece.blocks[1].y > 19 ||
+        active_piece.position.y + active_piece.blocks[2].y > 19 ||
+        active_piece.position.y + active_piece.blocks[3].y > 19 ||
+        board.blocks[(active_piece.position.y + active_piece.blocks[0].y) as usize][(active_piece.position.x + active_piece.blocks[0].x) as usize].filled ||
+        board.blocks[(active_piece.position.y + active_piece.blocks[1].y) as usize][(active_piece.position.x + active_piece.blocks[1].x) as usize].filled ||
+        board.blocks[(active_piece.position.y + active_piece.blocks[2].y) as usize][(active_piece.position.x + active_piece.blocks[2].x) as usize].filled ||
+        board.blocks[(active_piece.position.y + active_piece.blocks[3].y) as usize][(active_piece.position.x + active_piece.blocks[3].x) as usize].filled
+    {
+        active_piece.position.y -= 1;
+        board.blocks[(active_piece.position.y + active_piece.blocks[0].y) as usize][(active_piece.position.x + active_piece.blocks[0].x) as usize].filled = true;
+        board.blocks[(active_piece.position.y + active_piece.blocks[1].y) as usize][(active_piece.position.x + active_piece.blocks[1].x) as usize].filled = true;
+        board.blocks[(active_piece.position.y + active_piece.blocks[2].y) as usize][(active_piece.position.x + active_piece.blocks[2].x) as usize].filled = true;
+        board.blocks[(active_piece.position.y + active_piece.blocks[3].y) as usize][(active_piece.position.x + active_piece.blocks[3].x) as usize].filled = true;
+
+        board.blocks[(active_piece.position.y + active_piece.blocks[0].y) as usize][(active_piece.position.x + active_piece.blocks[0].x) as usize].pattern = active_piece.pattern;
+        board.blocks[(active_piece.position.y + active_piece.blocks[1].y) as usize][(active_piece.position.x + active_piece.blocks[1].x) as usize].pattern = active_piece.pattern;
+        board.blocks[(active_piece.position.y + active_piece.blocks[2].y) as usize][(active_piece.position.x + active_piece.blocks[2].x) as usize].pattern = active_piece.pattern;
+        board.blocks[(active_piece.position.y + active_piece.blocks[3].y) as usize][(active_piece.position.x + active_piece.blocks[3].x) as usize].pattern = active_piece.pattern;
+
+        active_piece.position.y = 0;
+        active_piece.position.x = 0;
+    }
+}
+
 fn print_board(board: &Board, active_piece: &Square) {
     execute!(
         stdout(),
@@ -123,9 +180,7 @@ fn print_board(board: &Board, active_piece: &Square) {
         MoveUp(20),
     ).unwrap();
 
-    let mut board_copy: Board = Board {
-        blocks: [[' '; 10]; 20],
-    };
+    let mut simple_board: [[char; 10]; 20] = [[' '; 10]; 20];
 
     for y in 0..board.blocks.len() {
         for x in 0..board.blocks[0].len() {
@@ -135,13 +190,13 @@ fn print_board(board: &Board, active_piece: &Square) {
                 x == (active_piece.position.x + active_piece.blocks[2].x).into() && y == (active_piece.position.y + active_piece.blocks[2].y).into() ||
                 x == (active_piece.position.x + active_piece.blocks[3].x).into() && y == (active_piece.position.y + active_piece.blocks[3].y).into()
             {
-                board_copy.blocks[y][x] = active_piece.pattern;
+                simple_board[y][x] = active_piece.pattern;
             } else {
-                board_copy.blocks[y][x] = board.blocks[y][x];
+                simple_board[y][x] = board.blocks[y][x].pattern;
             }
         }
     }
-    for line in board_copy.blocks {
+    for line in simple_board {
         println!("{:?}", line);
     }
 }
