@@ -9,11 +9,15 @@ use rand::Rng;
 const BOARD_WIDTH:  usize = 10;
 const BOARD_HEIGHT: usize = 20;
 
+#[derive(Copy)]
+#[derive(Clone)]
 struct Vector2 {
     x: i8,
     y: i8,
 }
 
+#[derive(Copy)]
+#[derive(Clone)]
 struct Piece {
     position: Vector2,
     spawn_offset: Vector2,
@@ -503,6 +507,22 @@ fn collisions_exist(active_piece: &Piece, board: &Board) -> bool {
     }
 }
 
+fn calculate_and_create_ghost_piece(piece: &Piece, board: &Board) -> Piece {
+    let mut ghost_piece = *piece;
+    ghost_piece.pattern = '🤍';
+
+    loop {
+        ghost_piece.position.y += 1;
+        if ghost_piece.is_out_of_bounds() || collisions_exist(&ghost_piece, board)
+        {
+            ghost_piece.position.y -=1;
+            break;
+        };
+    }
+
+    return ghost_piece;
+}
+
 fn print_board(board: &Board, active_piece: &Piece) {
     execute!(
         stdout(),
@@ -510,6 +530,8 @@ fn print_board(board: &Board, active_piece: &Piece) {
         MoveLeft(50),
         MoveUp(20),
     ).unwrap();
+
+    let ghost_piece = calculate_and_create_ghost_piece(active_piece, board);
 
     let mut simple_board: [[char; 10]; 20] = [[' '; 10]; 20];
 
@@ -522,7 +544,15 @@ fn print_board(board: &Board, active_piece: &Piece) {
                 x == (active_piece.position.x + active_piece.blocks()[3].x) as usize && y == (active_piece.position.y + active_piece.blocks()[3].y) as usize
             {
                 simple_board[y][x] = active_piece.pattern;
-            } else {
+            } else if
+                x == (ghost_piece.position.x + ghost_piece.blocks()[0].x) as usize && y == (ghost_piece.position.y + ghost_piece.blocks()[0].y) as usize ||
+                x == (ghost_piece.position.x + ghost_piece.blocks()[1].x) as usize && y == (ghost_piece.position.y + ghost_piece.blocks()[1].y) as usize ||
+                x == (ghost_piece.position.x + ghost_piece.blocks()[2].x) as usize && y == (ghost_piece.position.y + ghost_piece.blocks()[2].y) as usize ||
+                x == (ghost_piece.position.x + ghost_piece.blocks()[3].x) as usize && y == (ghost_piece.position.y + ghost_piece.blocks()[3].y) as usize
+            {
+                simple_board[y][x] = ghost_piece.pattern;
+            } else
+            {
                 simple_board[y][x] = board.blocks[y][x].pattern;
             }
         }
