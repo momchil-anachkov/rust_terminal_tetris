@@ -74,7 +74,7 @@ impl Piece {
 
     fn make_square() -> Piece {
         return Piece {
-            pattern: '0',
+            pattern: '🟨',
             position: Vector2 { x: 0, y: 0 },
             spawn_offset: Vector2 { x: 0, y: 0 },
             current_rotation: 0,
@@ -109,7 +109,7 @@ impl Piece {
 
     fn make_l() -> Piece {
         return Piece {
-            pattern: 'L',
+            pattern: '🟧',
             position: Vector2 { x: 0, y: 0 },
             spawn_offset: Vector2 { x: 0, y: 1 },
             current_rotation: 0,
@@ -144,7 +144,7 @@ impl Piece {
 
     fn make_j() -> Piece {
         return Piece {
-            pattern: 'J',
+            pattern: '🟦',
             position: Vector2 { x: 0, y: 0 },
             spawn_offset: Vector2 { x: 1, y: 1 },
             current_rotation: 0,
@@ -179,7 +179,7 @@ impl Piece {
 
     fn make_s() -> Piece {
         return Piece {
-            pattern: 'S',
+            pattern: '🟩',
             position: Vector2 { x: 0, y: 0 },
             spawn_offset: Vector2 { x: 1, y: 0 },
             current_rotation: 0,
@@ -214,7 +214,7 @@ impl Piece {
 
     fn make_z() -> Piece {
         return Piece {
-            pattern: 'Z',
+            pattern: '🟥',
             position: Vector2 { x: 0, y: 0 },
             spawn_offset: Vector2 { x: 1, y: 0 },
             current_rotation: 0,
@@ -249,7 +249,7 @@ impl Piece {
 
     fn make_i() -> Piece {
         return Piece {
-            pattern: 'I',
+            pattern: '🟪',
             position: Vector2 { x: 0, y: 0 },
             spawn_offset: Vector2 { x: 1, y: 0 },
             current_rotation: 0,
@@ -284,7 +284,7 @@ impl Piece {
 
     fn make_t() -> Piece {
         return Piece {
-            pattern: 'T',
+            pattern: '🟫',
             position: Vector2 { x: 0, y: 0 },
             spawn_offset: Vector2 { x: 1, y: 0 },
             current_rotation: 0,
@@ -335,7 +335,7 @@ fn main() {
     let mut state_changed: bool;
 
     let mut board: Board = Board {
-        blocks: [ [Block { filled: false, pattern: ' ' }; BOARD_WIDTH]; BOARD_HEIGHT],
+        blocks: [ [Block { filled: false, pattern: '🖤' }; BOARD_WIDTH]; BOARD_HEIGHT],
     };
 
     let device_state = DeviceState::new();
@@ -528,6 +528,9 @@ fn print_board(board: &Board, active_piece: &Piece) {
         }
     }
     for line in simple_board {
-        println!("{:?}", line);
+        for c in line {
+            print!("{}", c);
+        }
+        print!("\n");
     }
 }
