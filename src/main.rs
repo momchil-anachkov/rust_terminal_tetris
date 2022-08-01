@@ -17,7 +17,8 @@ struct Vector2 {
 struct Piece {
     position: Vector2,
     spawn_offset: Vector2,
-    blocks: [Vector2; 4],
+    current_rotation: usize,
+    rotations: [[Vector2; 4]; 4],
     pattern: char,
 }
 
@@ -26,24 +27,44 @@ struct Board {
 }
 
 impl Piece {
+    fn blocks(self: &Piece) -> &[Vector2; 4] {
+        return &self.rotations[self.current_rotation];
+    }
+
+    fn rotate_clockwise(self: &mut Piece) {
+        if self.current_rotation == 3 {
+            self.current_rotation = 0;
+        } else {
+            self.current_rotation += 1;
+        }
+    }
+
+    fn rotate_counterclockwise(self: &mut Piece) {
+        if self.current_rotation == 0 {
+            self.current_rotation = 3;
+        } else {
+            self.current_rotation -= 1;
+        }
+    }
+
     fn is_out_of_bounds(self: &Piece) -> bool {
         if
-            self.position.x + self.blocks[0].x < 0 ||
-            self.position.x + self.blocks[1].x < 0 ||
-            self.position.x + self.blocks[2].x < 0 ||
-            self.position.x + self.blocks[3].x < 0 ||
-            self.position.y + self.blocks[0].y < 0 ||
-            self.position.y + self.blocks[1].y < 0 ||
-            self.position.y + self.blocks[2].y < 0 ||
-            self.position.y + self.blocks[3].y < 0 ||
-            self.position.x + self.blocks[0].x == BOARD_WIDTH  as i8 ||
-            self.position.x + self.blocks[1].x == BOARD_WIDTH  as i8 ||
-            self.position.x + self.blocks[2].x == BOARD_WIDTH  as i8 ||
-            self.position.x + self.blocks[3].x == BOARD_WIDTH  as i8 ||
-            self.position.y + self.blocks[3].y == BOARD_HEIGHT as i8 ||
-            self.position.y + self.blocks[0].y == BOARD_HEIGHT as i8 ||
-            self.position.y + self.blocks[1].y == BOARD_HEIGHT as i8 ||
-            self.position.y + self.blocks[2].y == BOARD_HEIGHT as i8
+            self.position.x + self.blocks()[0].x < 0 ||
+            self.position.x + self.blocks()[1].x < 0 ||
+            self.position.x + self.blocks()[2].x < 0 ||
+            self.position.x + self.blocks()[3].x < 0 ||
+            self.position.y + self.blocks()[0].y < 0 ||
+            self.position.y + self.blocks()[1].y < 0 ||
+            self.position.y + self.blocks()[2].y < 0 ||
+            self.position.y + self.blocks()[3].y < 0 ||
+            self.position.x + self.blocks()[0].x == BOARD_WIDTH  as i8 ||
+            self.position.x + self.blocks()[1].x == BOARD_WIDTH  as i8 ||
+            self.position.x + self.blocks()[2].x == BOARD_WIDTH  as i8 ||
+            self.position.x + self.blocks()[3].x == BOARD_WIDTH  as i8 ||
+            self.position.y + self.blocks()[3].y == BOARD_HEIGHT as i8 ||
+            self.position.y + self.blocks()[0].y == BOARD_HEIGHT as i8 ||
+            self.position.y + self.blocks()[1].y == BOARD_HEIGHT as i8 ||
+            self.position.y + self.blocks()[2].y == BOARD_HEIGHT as i8
         {
             return true;
         } else {
@@ -56,12 +77,33 @@ impl Piece {
             pattern: '0',
             position: Vector2 { x: 0, y: 0 },
             spawn_offset: Vector2 { x: 0, y: 0 },
-            blocks: [
-                Vector2 { x: 0, y: 0 },
-                Vector2 { x: 1, y: 0 },
-                Vector2 { x: 0, y: 1 },
-                Vector2 { x: 1, y: 1 },
-            ]
+            current_rotation: 0,
+            rotations: [
+                [
+                    Vector2 { x: 0, y: 0 },
+                    Vector2 { x: 1, y: 0 },
+                    Vector2 { x: 0, y: 1 },
+                    Vector2 { x: 1, y: 1 },
+                ],
+                [
+                    Vector2 { x: 0, y: 0 },
+                    Vector2 { x: 1, y: 0 },
+                    Vector2 { x: 0, y: 1 },
+                    Vector2 { x: 1, y: 1 },
+                ],
+                [
+                    Vector2 { x: 0, y: 0 },
+                    Vector2 { x: 1, y: 0 },
+                    Vector2 { x: 0, y: 1 },
+                    Vector2 { x: 1, y: 1 },
+                ],
+                [
+                    Vector2 { x: 0, y: 0 },
+                    Vector2 { x: 1, y: 0 },
+                    Vector2 { x: 0, y: 1 },
+                    Vector2 { x: 1, y: 1 },
+                ],
+            ],
         }
     }
 
@@ -70,12 +112,33 @@ impl Piece {
             pattern: 'L',
             position: Vector2 { x: 0, y: 0 },
             spawn_offset: Vector2 { x: 0, y: 1 },
-            blocks: [
-                Vector2 { x: 0, y: -1 },
-                Vector2 { x: 0, y: 0 },
-                Vector2 { x: 0, y: 1 },
-                Vector2 { x: 1, y: 1 },
-            ]
+            current_rotation: 0,
+            rotations: [
+                [
+                    Vector2 { x: 0, y: -1 },
+                    Vector2 { x: 0, y:  0 },
+                    Vector2 { x: 0, y:  1 },
+                    Vector2 { x: 1, y:  1 },
+                ],
+                [
+                    Vector2 { x: -1, y: 1 },
+                    Vector2 { x: -1, y: 0 },
+                    Vector2 { x: 0,  y: 0 },
+                    Vector2 { x: 1,  y: 0 },
+                ],
+                [
+                    Vector2 { x: -1, y: -1 },
+                    Vector2 { x:  0, y: -1 },
+                    Vector2 { x:  0, y: 0  },
+                    Vector2 { x:  0, y: 1  },
+                ],
+                [
+                    Vector2 { x: -1, y:  0 },
+                    Vector2 { x:  0, y:  0 },
+                    Vector2 { x:  1, y:  0 },
+                    Vector2 { x:  1, y: -1 },
+                ],
+            ],
         }
     }
 
@@ -84,12 +147,33 @@ impl Piece {
             pattern: 'J',
             position: Vector2 { x: 0, y: 0 },
             spawn_offset: Vector2 { x: 1, y: 1 },
-            blocks: [
-                Vector2 { x: 0, y: -1 },
-                Vector2 { x: 0, y: 0 },
-                Vector2 { x: 0, y: 1 },
-                Vector2 { x: -1, y: 1 },
-            ]
+            current_rotation: 0,
+            rotations: [
+                [
+                    Vector2 { x:  0, y: -1 },
+                    Vector2 { x:  0, y:  0 },
+                    Vector2 { x:  0, y:  1 },
+                    Vector2 { x: -1, y:  1 },
+                ],
+                [
+                    Vector2 { x: -1, y: -1 },
+                    Vector2 { x: -1, y:  0 },
+                    Vector2 { x:  0, y:  0 },
+                    Vector2 { x:  1, y:  0 },
+                ],
+                [
+                    Vector2 { x: 1, y: -1 },
+                    Vector2 { x: 0, y: -1 },
+                    Vector2 { x: 0, y:  0 },
+                    Vector2 { x: 0, y:  1 },
+                ],
+                [
+                    Vector2 { x: -1, y: 0 },
+                    Vector2 { x:  0, y: 0 },
+                    Vector2 { x:  1, y: 0 },
+                    Vector2 { x:  1, y: 1 },
+                ],
+            ],
         }
     }
 
@@ -98,12 +182,33 @@ impl Piece {
             pattern: 'S',
             position: Vector2 { x: 0, y: 0 },
             spawn_offset: Vector2 { x: 1, y: 0 },
-            blocks: [
-                Vector2 { x: 1, y: 0 },
-                Vector2 { x: 0, y: 0 },
-                Vector2 { x: 0, y: 1 },
-                Vector2 { x: -1, y: 1 },
-            ]
+            current_rotation: 0,
+            rotations: [
+                [
+                    Vector2 { x:  1, y: 0 },
+                    Vector2 { x:  0, y: 0 },
+                    Vector2 { x:  0, y: 1 },
+                    Vector2 { x: -1, y: 1 },
+                ],
+                [
+                    Vector2 { x: 0, y: -1 },
+                    Vector2 { x: 0, y:  0 },
+                    Vector2 { x: 1, y:  0 },
+                    Vector2 { x: 1, y:  1 },
+                ],
+                [
+                    Vector2 { x:  1, y: 1 },
+                    Vector2 { x:  0, y: 1 },
+                    Vector2 { x:  0, y: 2 },
+                    Vector2 { x: -1, y: 2 },
+                ],
+                [
+                    Vector2 { x: -1, y: -1 },
+                    Vector2 { x: -1, y:  0 },
+                    Vector2 { x:  0, y:  0 },
+                    Vector2 { x:  0, y:  1 },
+                ],
+            ],
         }
     }
 
@@ -112,12 +217,33 @@ impl Piece {
             pattern: 'Z',
             position: Vector2 { x: 0, y: 0 },
             spawn_offset: Vector2 { x: 1, y: 0 },
-            blocks: [
-                Vector2 { x: -1, y: 0 },
-                Vector2 { x: 0, y: 0 },
-                Vector2 { x: 0, y: 1 },
-                Vector2 { x: 1, y: 1 },
-            ]
+            current_rotation: 0,
+            rotations: [
+                [
+                    Vector2 { x: -1, y: 0 },
+                    Vector2 { x:  0, y: 0 },
+                    Vector2 { x:  0, y: 1 },
+                    Vector2 { x:  1, y: 1 },
+                ],
+                [
+                    Vector2 { x: 1, y: -1 },
+                    Vector2 { x: 1, y:  0 },
+                    Vector2 { x: 0, y:  0 },
+                    Vector2 { x: 0, y:  1 },
+                ],
+                [
+                    Vector2 { x: -1, y: 1 },
+                    Vector2 { x:  0, y: 1 },
+                    Vector2 { x:  0, y: 2 },
+                    Vector2 { x:  1, y: 2 },
+                ],
+                [
+                    Vector2 { x:  0, y: -1 },
+                    Vector2 { x:  0, y:  0 },
+                    Vector2 { x: -1, y:  0 },
+                    Vector2 { x: -1, y:  1 },
+                ],
+            ],
         }
     }
 
@@ -126,12 +252,33 @@ impl Piece {
             pattern: 'I',
             position: Vector2 { x: 0, y: 0 },
             spawn_offset: Vector2 { x: 1, y: 0 },
-            blocks: [
-                Vector2 { x: -1, y: 0 },
-                Vector2 { x: 0, y: 0 },
-                Vector2 { x: 1, y: 0 },
-                Vector2 { x: 2, y: 0 },
-            ]
+            current_rotation: 0,
+            rotations: [
+                [
+                    Vector2 { x: -1, y: 0 },
+                    Vector2 { x:  0, y: 0 },
+                    Vector2 { x:  1, y: 0 },
+                    Vector2 { x:  2, y: 0 },
+                ],
+                [
+                    Vector2 { x: 1, y: -1 },
+                    Vector2 { x: 1, y:  0 },
+                    Vector2 { x: 1, y:  1 },
+                    Vector2 { x: 1, y:  2 },
+                ],
+                [
+                    Vector2 { x: -1, y: 1 },
+                    Vector2 { x:  0, y: 1 },
+                    Vector2 { x:  1, y: 1 },
+                    Vector2 { x:  2, y: 1 },
+                ],
+                [
+                    Vector2 { x: 0, y: -1 },
+                    Vector2 { x: 0, y:  0 },
+                    Vector2 { x: 0, y:  1 },
+                    Vector2 { x: 0, y:  2 },
+                ],
+            ],
         }
     }
 
@@ -140,12 +287,33 @@ impl Piece {
             pattern: 'T',
             position: Vector2 { x: 0, y: 0 },
             spawn_offset: Vector2 { x: 1, y: 0 },
-            blocks: [
-                Vector2 { x: -1, y: 0 },
-                Vector2 { x: 0, y: 0 },
-                Vector2 { x: 1, y: 0 },
-                Vector2 { x: 0, y: 1 },
-            ]
+            current_rotation: 0,
+            rotations: [
+                [
+                    Vector2 { x: -1, y: 0 },
+                    Vector2 { x:  0, y: 0 },
+                    Vector2 { x:  0, y: 1 },
+                    Vector2 { x:  1, y: 0 },
+                ],
+                [
+                    Vector2 { x:  0, y: -1 },
+                    Vector2 { x:  0, y:  0 },
+                    Vector2 { x: -1, y:  0 },
+                    Vector2 { x:  0, y:  1 },
+                ],
+                [
+                    Vector2 { x: -1, y:  0 },
+                    Vector2 { x:  0, y:  0 },
+                    Vector2 { x:  0, y: -1 },
+                    Vector2 { x:  1, y:  0 },
+                ],
+                [
+                    Vector2 { x: 0, y: -1 },
+                    Vector2 { x: 0, y:  0 },
+                    Vector2 { x: 1, y:  0 },
+                    Vector2 { x: 0, y:  1 },
+                ],
+            ],
         }
     }
 }
@@ -174,7 +342,7 @@ fn main() {
 
     let mut active_piece: Piece = spawn_next_piece();
 
-    // print_board(&board, &square);
+    print_board(&board, &active_piece);
 
     loop {
         state_changed = false;
@@ -206,6 +374,16 @@ fn main() {
 
                 if key.eq(&Keycode::Down) {
                     move_down(&mut active_piece, &mut board);
+                    state_changed = true;
+                }
+
+                if key.eq(&Keycode::Z) {
+                    rotate_counterclockwise(&mut active_piece, &mut board);
+                    state_changed = true;
+                }
+
+                if key.eq(&Keycode::X) {
+                    rotate_clockwise(&mut active_piece, &mut board);
                     state_changed = true;
                 }
             }
@@ -245,6 +423,24 @@ fn make_random_piece() -> Piece {
     }
 }
 
+fn rotate_clockwise(active_piece: &mut Piece, board: &Board) {
+    active_piece.rotate_clockwise();
+
+    if active_piece.is_out_of_bounds() || collisions_exist(active_piece, board)
+    {
+        active_piece.rotate_counterclockwise();
+    }
+}
+
+fn rotate_counterclockwise(active_piece: &mut Piece, board: &Board) {
+    active_piece.rotate_counterclockwise();
+
+    if active_piece.is_out_of_bounds() || collisions_exist(active_piece, board)
+    {
+        active_piece.rotate_clockwise();
+    }
+}
+
 fn move_left(active_piece: &mut Piece, board: &Board) {
     active_piece.position.x -= 1;
 
@@ -278,15 +474,15 @@ fn move_down_and_stick(active_piece: &mut Piece, board: &mut Board) {
     if active_piece.is_out_of_bounds() || collisions_exist(active_piece, board)
     {
         active_piece.position.y -= 1;
-        board.blocks[(active_piece.position.y + active_piece.blocks[0].y) as usize][(active_piece.position.x + active_piece.blocks[0].x) as usize].filled = true;
-        board.blocks[(active_piece.position.y + active_piece.blocks[1].y) as usize][(active_piece.position.x + active_piece.blocks[1].x) as usize].filled = true;
-        board.blocks[(active_piece.position.y + active_piece.blocks[2].y) as usize][(active_piece.position.x + active_piece.blocks[2].x) as usize].filled = true;
-        board.blocks[(active_piece.position.y + active_piece.blocks[3].y) as usize][(active_piece.position.x + active_piece.blocks[3].x) as usize].filled = true;
+        board.blocks[(active_piece.position.y + active_piece.blocks()[0].y) as usize][(active_piece.position.x + active_piece.blocks()[0].x) as usize].filled = true;
+        board.blocks[(active_piece.position.y + active_piece.blocks()[1].y) as usize][(active_piece.position.x + active_piece.blocks()[1].x) as usize].filled = true;
+        board.blocks[(active_piece.position.y + active_piece.blocks()[2].y) as usize][(active_piece.position.x + active_piece.blocks()[2].x) as usize].filled = true;
+        board.blocks[(active_piece.position.y + active_piece.blocks()[3].y) as usize][(active_piece.position.x + active_piece.blocks()[3].x) as usize].filled = true;
 
-        board.blocks[(active_piece.position.y + active_piece.blocks[0].y) as usize][(active_piece.position.x + active_piece.blocks[0].x) as usize].pattern = active_piece.pattern;
-        board.blocks[(active_piece.position.y + active_piece.blocks[1].y) as usize][(active_piece.position.x + active_piece.blocks[1].x) as usize].pattern = active_piece.pattern;
-        board.blocks[(active_piece.position.y + active_piece.blocks[2].y) as usize][(active_piece.position.x + active_piece.blocks[2].x) as usize].pattern = active_piece.pattern;
-        board.blocks[(active_piece.position.y + active_piece.blocks[3].y) as usize][(active_piece.position.x + active_piece.blocks[3].x) as usize].pattern = active_piece.pattern;
+        board.blocks[(active_piece.position.y + active_piece.blocks()[0].y) as usize][(active_piece.position.x + active_piece.blocks()[0].x) as usize].pattern = active_piece.pattern;
+        board.blocks[(active_piece.position.y + active_piece.blocks()[1].y) as usize][(active_piece.position.x + active_piece.blocks()[1].x) as usize].pattern = active_piece.pattern;
+        board.blocks[(active_piece.position.y + active_piece.blocks()[2].y) as usize][(active_piece.position.x + active_piece.blocks()[2].x) as usize].pattern = active_piece.pattern;
+        board.blocks[(active_piece.position.y + active_piece.blocks()[3].y) as usize][(active_piece.position.x + active_piece.blocks()[3].x) as usize].pattern = active_piece.pattern;
 
         *active_piece = spawn_next_piece();
         active_piece.position.y = 0 + active_piece.spawn_offset.y;
@@ -296,10 +492,10 @@ fn move_down_and_stick(active_piece: &mut Piece, board: &mut Board) {
 
 fn collisions_exist(active_piece: &Piece, board: &Board) -> bool {
     if
-        board.blocks[(active_piece.position.y + active_piece.blocks[0].y) as usize][(active_piece.position.x + active_piece.blocks[0].x) as usize].filled ||
-        board.blocks[(active_piece.position.y + active_piece.blocks[1].y) as usize][(active_piece.position.x + active_piece.blocks[1].x) as usize].filled ||
-        board.blocks[(active_piece.position.y + active_piece.blocks[2].y) as usize][(active_piece.position.x + active_piece.blocks[2].x) as usize].filled ||
-        board.blocks[(active_piece.position.y + active_piece.blocks[3].y) as usize][(active_piece.position.x + active_piece.blocks[3].x) as usize].filled
+        board.blocks[(active_piece.position.y + active_piece.blocks()[0].y) as usize][(active_piece.position.x + active_piece.blocks()[0].x) as usize].filled ||
+        board.blocks[(active_piece.position.y + active_piece.blocks()[1].y) as usize][(active_piece.position.x + active_piece.blocks()[1].x) as usize].filled ||
+        board.blocks[(active_piece.position.y + active_piece.blocks()[2].y) as usize][(active_piece.position.x + active_piece.blocks()[2].x) as usize].filled ||
+        board.blocks[(active_piece.position.y + active_piece.blocks()[3].y) as usize][(active_piece.position.x + active_piece.blocks()[3].x) as usize].filled
     {
         return true;
     } else {
@@ -320,10 +516,10 @@ fn print_board(board: &Board, active_piece: &Piece) {
     for y in 0..board.blocks.len() {
         for x in 0..board.blocks[0].len() {
             if
-                x == (active_piece.position.x + active_piece.blocks[0].x) as usize && y == (active_piece.position.y + active_piece.blocks[0].y) as usize ||
-                x == (active_piece.position.x + active_piece.blocks[1].x) as usize && y == (active_piece.position.y + active_piece.blocks[1].y) as usize ||
-                x == (active_piece.position.x + active_piece.blocks[2].x) as usize && y == (active_piece.position.y + active_piece.blocks[2].y) as usize ||
-                x == (active_piece.position.x + active_piece.blocks[3].x) as usize && y == (active_piece.position.y + active_piece.blocks[3].y) as usize
+                x == (active_piece.position.x + active_piece.blocks()[0].x) as usize && y == (active_piece.position.y + active_piece.blocks()[0].y) as usize ||
+                x == (active_piece.position.x + active_piece.blocks()[1].x) as usize && y == (active_piece.position.y + active_piece.blocks()[1].y) as usize ||
+                x == (active_piece.position.x + active_piece.blocks()[2].x) as usize && y == (active_piece.position.y + active_piece.blocks()[2].y) as usize ||
+                x == (active_piece.position.x + active_piece.blocks()[3].x) as usize && y == (active_piece.position.y + active_piece.blocks()[3].y) as usize
             {
                 simple_board[y][x] = active_piece.pattern;
             } else {
