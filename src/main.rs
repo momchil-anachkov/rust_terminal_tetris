@@ -1,13 +1,13 @@
-use std::io::{stdin, stdout};
+use std::io::{stdout};
 use crossterm::{execute};
-use crossterm::cursor::{MoveLeft, MoveUp, Hide, Show};
+use crossterm::cursor::{MoveLeft, MoveUp};
 use std::{time};
-use std::panic::PanicInfo;
-use crossterm::event::KeyCode;
 use crossterm::terminal::{Clear, ClearType};
-use device_query::{DeviceEvents, DeviceQuery, DeviceState, Keycode};
-use device_query::Keycode::Left;
+use device_query::{DeviceQuery, DeviceState, Keycode};
 use rand::Rng;
+
+const BOARD_WIDTH:  usize = 10;
+const BOARD_HEIGHT: usize = 20;
 
 struct Vector2 {
     x: i8,
@@ -21,7 +21,36 @@ struct Piece {
     pattern: char,
 }
 
+struct Board {
+    blocks: [[Block; BOARD_WIDTH as usize]; BOARD_HEIGHT as usize],
+}
+
 impl Piece {
+    fn is_out_of_bounds(self: &Piece) -> bool {
+        if
+            self.position.x + self.blocks[0].x < 0 ||
+            self.position.x + self.blocks[1].x < 0 ||
+            self.position.x + self.blocks[2].x < 0 ||
+            self.position.x + self.blocks[3].x < 0 ||
+            self.position.y + self.blocks[0].y < 0 ||
+            self.position.y + self.blocks[1].y < 0 ||
+            self.position.y + self.blocks[2].y < 0 ||
+            self.position.y + self.blocks[3].y < 0 ||
+            self.position.x + self.blocks[0].x == BOARD_WIDTH  as i8 ||
+            self.position.x + self.blocks[1].x == BOARD_WIDTH  as i8 ||
+            self.position.x + self.blocks[2].x == BOARD_WIDTH  as i8 ||
+            self.position.x + self.blocks[3].x == BOARD_WIDTH  as i8 ||
+            self.position.y + self.blocks[3].y == BOARD_HEIGHT as i8 ||
+            self.position.y + self.blocks[0].y == BOARD_HEIGHT as i8 ||
+            self.position.y + self.blocks[1].y == BOARD_HEIGHT as i8 ||
+            self.position.y + self.blocks[2].y == BOARD_HEIGHT as i8
+        {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     fn make_square() -> Piece {
         return Piece {
             pattern: '0',
@@ -121,10 +150,6 @@ impl Piece {
     }
 }
 
-struct Board {
-    blocks: [[Block; 10]; 20],
-}
-
 #[derive(Copy)]
 #[derive(Clone)]
 struct Block {
@@ -139,10 +164,10 @@ fn main() {
     let mut delta_time: u128;
     let mut tick_threshold: u128 = 0;
     let mut key_is_pressed: bool = false;
-    let mut state_changed: bool = false;
+    let mut state_changed: bool;
 
     let mut board: Board = Board {
-        blocks: [ [Block { filled: false, pattern: ' ' }; 10]; 20],
+        blocks: [ [Block { filled: false, pattern: ' ' }; BOARD_WIDTH]; BOARD_HEIGHT],
     };
 
     let device_state = DeviceState::new();
@@ -221,18 +246,18 @@ fn make_random_piece() -> Piece {
 }
 
 fn move_left(active_piece: &mut Piece, board: &Board) {
-    if active_piece.position.x > 0 {
-        active_piece.position.x -= 1;
-        if collisions_exist(active_piece, board)
-        {
-            active_piece.position.x += 1;
-        }
+    active_piece.position.x -= 1;
+
+    if active_piece.is_out_of_bounds() || collisions_exist(active_piece, board)
+    {
+        active_piece.position.x += 1;
     }
 }
 
 fn move_right(active_piece: &mut Piece, board: &Board) {
     active_piece.position.x += 1;
-    if collisions_exist(active_piece, board)
+
+    if active_piece.is_out_of_bounds() || collisions_exist(active_piece, board)
     {
         active_piece.position.x -= 1;
     }
@@ -241,7 +266,7 @@ fn move_right(active_piece: &mut Piece, board: &Board) {
 fn move_down(active_piece: &mut Piece, board: &mut Board) {
     active_piece.position.y += 1;
 
-    if collisions_exist(active_piece, board)
+    if active_piece.is_out_of_bounds() || collisions_exist(active_piece, board)
     {
         active_piece.position.y -= 1;
     }
@@ -250,7 +275,7 @@ fn move_down(active_piece: &mut Piece, board: &mut Board) {
 fn move_down_and_stick(active_piece: &mut Piece, board: &mut Board) {
     active_piece.position.y += 1;
 
-    if collisions_exist(active_piece, board)
+    if active_piece.is_out_of_bounds() || collisions_exist(active_piece, board)
     {
         active_piece.position.y -= 1;
         board.blocks[(active_piece.position.y + active_piece.blocks[0].y) as usize][(active_piece.position.x + active_piece.blocks[0].x) as usize].filled = true;
@@ -263,9 +288,7 @@ fn move_down_and_stick(active_piece: &mut Piece, board: &mut Board) {
         board.blocks[(active_piece.position.y + active_piece.blocks[2].y) as usize][(active_piece.position.x + active_piece.blocks[2].x) as usize].pattern = active_piece.pattern;
         board.blocks[(active_piece.position.y + active_piece.blocks[3].y) as usize][(active_piece.position.x + active_piece.blocks[3].x) as usize].pattern = active_piece.pattern;
 
-
         *active_piece = spawn_next_piece();
-
         active_piece.position.y = 0 + active_piece.spawn_offset.y;
         active_piece.position.x = 0 + active_piece.spawn_offset.x;
     }
@@ -273,14 +296,6 @@ fn move_down_and_stick(active_piece: &mut Piece, board: &mut Board) {
 
 fn collisions_exist(active_piece: &Piece, board: &Board) -> bool {
     if
-        active_piece.position.x + active_piece.blocks[0].x > 9 ||
-        active_piece.position.x + active_piece.blocks[1].x > 9 ||
-        active_piece.position.x + active_piece.blocks[2].x > 9 ||
-        active_piece.position.x + active_piece.blocks[3].x > 9 ||
-        active_piece.position.y + active_piece.blocks[0].y > 19 ||
-        active_piece.position.y + active_piece.blocks[1].y > 19 ||
-        active_piece.position.y + active_piece.blocks[2].y > 19 ||
-        active_piece.position.y + active_piece.blocks[3].y > 19 ||
         board.blocks[(active_piece.position.y + active_piece.blocks[0].y) as usize][(active_piece.position.x + active_piece.blocks[0].x) as usize].filled ||
         board.blocks[(active_piece.position.y + active_piece.blocks[1].y) as usize][(active_piece.position.x + active_piece.blocks[1].x) as usize].filled ||
         board.blocks[(active_piece.position.y + active_piece.blocks[2].y) as usize][(active_piece.position.x + active_piece.blocks[2].x) as usize].filled ||
