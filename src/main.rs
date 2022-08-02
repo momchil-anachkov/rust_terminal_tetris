@@ -41,6 +41,10 @@ fn main() {
             if !key_is_pressed {
                 key_is_pressed = true;
 
+                if key.eq(&Keycode::Escape) {
+                    return;
+                }
+
                 if key.eq(&Keycode::Left) {
                     game.move_left();
                     state_changed = true;
