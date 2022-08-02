@@ -14,15 +14,17 @@ pub struct Game {
 
 impl Game {
     pub fn new() -> Game {
-        return Game {
+        let mut game = Game {
             active_piece: Game::make_random_piece(),
             board: Board {
                 blocks: [[Block { filled: false, pattern: '🖤' }; 10]; 20]
             }
         };
+        game.spawn_next_piece();
+        return game;
     }
 
-    pub fn spawn_next_piece(self: &mut Game) {
+    fn spawn_next_piece(self: &mut Game) {
         self.active_piece = Game::make_random_piece();
         self.active_piece.position.y = 0 + self.active_piece.spawn_offset.y;
         self.active_piece.position.x = 0 + self.active_piece.spawn_offset.x;
@@ -171,6 +173,13 @@ pub struct Piece {
 
 pub struct Board {
     pub blocks: [[Block; BOARD_WIDTH as usize]; BOARD_HEIGHT as usize],
+}
+
+#[derive(Copy)]
+#[derive(Clone)]
+pub struct Block {
+    pub filled: bool,
+    pub pattern: char,
 }
 
 impl Piece {
@@ -440,13 +449,6 @@ impl Piece {
     }
 }
 
-#[derive(Copy)]
-#[derive(Clone)]
-pub struct Block {
-    pub filled: bool,
-    pub pattern: char,
-}
-
 pub fn calculate_and_create_ghost_piece(piece: &Piece, board: &Board) -> Piece {
     let mut ghost_piece = *piece;
     ghost_piece.pattern = '🤍';
@@ -464,7 +466,7 @@ pub fn calculate_and_create_ghost_piece(piece: &Piece, board: &Board) -> Piece {
 }
 
 pub fn is_invalid_state(piece: &Piece, board: &Board) -> bool {
-    return piece_is_out_of_bounds(piece, boar) || collisions_exist(piece, board);
+    return piece_is_out_of_bounds(piece, board) || collisions_exist(piece, board);
 }
 
 pub fn piece_is_out_of_bounds (piece: &Piece, board: &Board) -> bool {
@@ -492,7 +494,7 @@ pub fn piece_is_out_of_bounds (piece: &Piece, board: &Board) -> bool {
 
 pub fn collisions_exist(active_piece: &Piece, board: &Board) -> bool {
     if
-    board.blocks[(active_piece.position.y + active_piece.blocks()[0].y) as usize][(active_piece.position.x + active_piece.blocks()[0].x) as usize].filled ||
+        board.blocks[(active_piece.position.y + active_piece.blocks()[0].y) as usize][(active_piece.position.x + active_piece.blocks()[0].x) as usize].filled ||
         board.blocks[(active_piece.position.y + active_piece.blocks()[1].y) as usize][(active_piece.position.x + active_piece.blocks()[1].x) as usize].filled ||
         board.blocks[(active_piece.position.y + active_piece.blocks()[2].y) as usize][(active_piece.position.x + active_piece.blocks()[2].x) as usize].filled ||
         board.blocks[(active_piece.position.y + active_piece.blocks()[3].y) as usize][(active_piece.position.x + active_piece.blocks()[3].x) as usize].filled

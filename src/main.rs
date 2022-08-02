@@ -21,8 +21,6 @@ fn main() {
 
     let mut game: Game = Game::new();
 
-    game.spawn_next_piece();
-
     game.print_board();
 
     loop {
@@ -58,7 +56,7 @@ fn main() {
                     state_changed = true;
                 }
 
-                if key.eq(&Keycode::Z) {
+                if key.eq(&Keycode::Z) || key.eq(&Keycode::Up) {
                     game.rotate_counterclockwise();
                     state_changed = true;
                 }
