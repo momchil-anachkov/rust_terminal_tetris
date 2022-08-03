@@ -449,7 +449,7 @@ impl Piece {
     }
 }
 
-pub fn calculate_and_create_ghost_piece(piece: &Piece, board: &Board) -> Piece {
+fn calculate_and_create_ghost_piece(piece: &Piece, board: &Board) -> Piece {
     let mut ghost_piece = *piece;
     ghost_piece.pattern = '🤍';
 
@@ -465,11 +465,11 @@ pub fn calculate_and_create_ghost_piece(piece: &Piece, board: &Board) -> Piece {
     return ghost_piece;
 }
 
-pub fn is_invalid_state(piece: &Piece, board: &Board) -> bool {
+fn is_invalid_state(piece: &Piece, board: &Board) -> bool {
     return piece_is_out_of_bounds(piece, board) || collisions_exist(piece, board);
 }
 
-pub fn piece_is_out_of_bounds (piece: &Piece, board: &Board) -> bool {
+fn piece_is_out_of_bounds (piece: &Piece, board: &Board) -> bool {
     let board_height = board.blocks.len();
     let board_width = board.blocks[0].len();
 
@@ -492,7 +492,7 @@ pub fn piece_is_out_of_bounds (piece: &Piece, board: &Board) -> bool {
         piece.position.y + piece.blocks()[2].y == board_height as i8
 }
 
-pub fn collisions_exist(active_piece: &Piece, board: &Board) -> bool {
+fn collisions_exist(active_piece: &Piece, board: &Board) -> bool {
     if
         board.blocks[(active_piece.position.y + active_piece.blocks()[0].y) as usize][(active_piece.position.x + active_piece.blocks()[0].x) as usize].filled ||
         board.blocks[(active_piece.position.y + active_piece.blocks()[1].y) as usize][(active_piece.position.x + active_piece.blocks()[1].x) as usize].filled ||
