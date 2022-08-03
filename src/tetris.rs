@@ -1,8 +1,8 @@
 use crossterm::execute;
 use crossterm::terminal::{Clear, ClearType};
-use crossterm::cursor::{MoveLeft, MoveUp};
+use crossterm::cursor::{MoveLeft, MoveUp, MoveToColumn, MoveToRow};
 use rand::Rng;
-use std::io::stdout;
+use std::io::{stdout, Write};
 
 pub const BOARD_WIDTH:  usize = 10;
 pub const BOARD_HEIGHT: usize = 20;
@@ -114,9 +114,9 @@ impl Game {
     pub fn print_board(self: &mut Game) {
         execute!(
             stdout(),
-            Clear(ClearType::All),
-            MoveLeft(50),
-            MoveUp(20),
+            MoveToColumn(0),
+            MoveToRow(0),
+            Clear(ClearType::FromCursorDown),
         ).unwrap();
 
         let ghost_piece = calculate_and_create_ghost_piece(&self.active_piece, &self.board);
