@@ -12,7 +12,7 @@ use crate::tetris::Game;
 
 const TICK_INTERVAL_TIME: u128 = 1000000;
 const KEY_REPEAT_DELAY: u128 = 200000;
-const KEY_REPEAT_INTERVAL: u128 = 50000;
+const KEY_REPEAT_INTERVAL: u128 = 100000;
 
 fn main() {
     let mut last_frame_start_time: u128 = 0;
@@ -27,6 +27,8 @@ fn main() {
 
     let mut game: Game = Game::new();
 
+    crossterm::terminal::enable_raw_mode().unwrap();
+
     game.print_board();
 
     let start = time::Instant::now();
@@ -40,13 +42,28 @@ fn main() {
 
         let keys: Vec<Keycode> = device_state.get_keys();
 
+        // TODO:
+        // Build a command system that reads the inputs + delta_time and decides what commands to run
+        // Process the command with the Game object and map it to a method
+        // Make a renderer that takes the game state, and renders it to the terminal
+
         if keys.is_empty() {
             key_is_pressed = false;
             time_since_last_key_repeat = 0;
             time_since_key_down = 0;
         }
 
+        if keys.contains(&Keycode::LControl) && keys.contains(&Keycode::C) {
+            crossterm::terminal::disable_raw_mode().unwrap();
+            return;
+        }
+
         for key in keys.iter() {
+            if key.eq(&Keycode::Escape) {
+                crossterm::terminal::disable_raw_mode().unwrap();
+                return;
+            }
+
             if !key_is_pressed {
                 key_is_pressed = true;
                 process_keypress(key, &mut game);

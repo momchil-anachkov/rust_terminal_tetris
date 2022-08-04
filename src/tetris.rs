@@ -1,6 +1,6 @@
 use crossterm::execute;
 use crossterm::terminal::{Clear, ClearType};
-use crossterm::cursor::{MoveLeft, MoveUp, MoveToColumn, MoveToRow};
+use crossterm::cursor::{MoveLeft, MoveUp, MoveToColumn, MoveToRow, MoveDown};
 use rand::Rng;
 use std::io::{stdout, Write};
 
@@ -147,9 +147,15 @@ impl Game {
         }
         for line in simple_board {
             for c in line {
-                print!("{}", c);
+                // print!("{}", c);
+                write!(stdout(), "{}", c).unwrap();
             }
-            print!("\n");
+
+            crossterm::execute!(
+                stdout(),
+                crossterm::cursor::MoveDown(1),
+                crossterm::cursor::MoveToColumn(0),
+            ).unwrap();
         }
     }
 }
