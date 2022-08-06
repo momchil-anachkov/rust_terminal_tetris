@@ -47,6 +47,7 @@ fn main() -> Result<(), ()> {
                     GameMove::MoveDown => game.move_down(),
                     GameMove::RotateClockwise => game.rotate_clockwise(),
                     GameMove::RotateCounterClockwise => game.rotate_counterclockwise(),
+                    GameMove::Slam => game.slam(),
                 }
                 game.print_board();
             }
@@ -64,6 +65,7 @@ enum GameMove {
     MoveDown,
     RotateClockwise,
     RotateCounterClockwise,
+    Slam,
 }
 
 #[derive(PartialEq)]
@@ -162,6 +164,12 @@ impl InputSystem {
         if self.current_frame_keys.contains(&Keycode::X) {
             if !self.last_frame_keys.contains(&Keycode::X) {
                 return self.return_command(Command::MakeGameMove(GameMove::RotateCounterClockwise));
+            }
+        }
+
+        if self.current_frame_keys.contains(&Keycode::Space) {
+            if !self.last_frame_keys.contains(&Keycode::Space) {
+                return self.return_command(Command::MakeGameMove(GameMove::Slam));
             }
         }
 

@@ -111,6 +111,28 @@ impl Game {
         }
     }
 
+    pub fn slam(self: &mut Game) {
+        loop {
+            self.active_piece.position.y += 1;
+            if is_invalid_state(&self.active_piece, &self.board) {
+                self.active_piece.position.y -=1;
+
+                self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[0].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[0].x) as usize].filled = true;
+                self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[1].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[1].x) as usize].filled = true;
+                self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[2].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[2].x) as usize].filled = true;
+                self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[3].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[3].x) as usize].filled = true;
+
+                self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[0].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[0].x) as usize].pattern = self.active_piece.pattern;
+                self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[1].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[1].x) as usize].pattern = self.active_piece.pattern;
+                self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[2].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[2].x) as usize].pattern = self.active_piece.pattern;
+                self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[3].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[3].x) as usize].pattern = self.active_piece.pattern;
+
+                self.spawn_next_piece();
+                break;
+            }
+        }
+    }
+
     pub fn print_board(self: &mut Game) {
         execute!(
             stdout(),
