@@ -51,8 +51,15 @@ impl Game {
     pub fn rotate_clockwise(self: &mut Game) {
         self.active_piece.rotate_clockwise();
 
-        if is_invalid_state(&self.active_piece, &self.board)
-        {
+        if is_invalid_state(&self.active_piece, &self.board) {
+            self.move_left();
+        }
+
+        if is_invalid_state(&self.active_piece, &self.board) {
+            self.move_right();
+        }
+
+        if is_invalid_state(&self.active_piece, &self.board) {
             self.active_piece.rotate_counterclockwise();
         }
     }
@@ -60,8 +67,15 @@ impl Game {
     pub fn rotate_counterclockwise(self: &mut Game) {
         self.active_piece.rotate_counterclockwise();
 
-        if is_invalid_state(&self.active_piece, &self.board)
-        {
+        if is_invalid_state(&self.active_piece, &self.board) {
+            self.move_left();
+        }
+
+        if is_invalid_state(&self.active_piece, &self.board) {
+            self.move_right();
+        }
+
+        if is_invalid_state(&self.active_piece, &self.board) {
             self.active_piece.rotate_clockwise();
         }
     }
@@ -69,8 +83,7 @@ impl Game {
     pub fn move_left(self: &mut Game) {
         self.active_piece.position.x -= 1;
 
-        if is_invalid_state(&self.active_piece, &self.board)
-        {
+        if is_invalid_state(&self.active_piece, &self.board) {
             self.active_piece.position.x += 1;
         }
     }
@@ -78,8 +91,7 @@ impl Game {
     pub fn move_right(self: &mut Game) {
         self.active_piece.position.x += 1;
 
-        if is_invalid_state(&self.active_piece, &self.board)
-        {
+        if is_invalid_state(&self.active_piece, &self.board) {
             self.active_piece.position.x -= 1;
         }
     }
@@ -87,8 +99,7 @@ impl Game {
     pub fn move_down(self: &mut Game) {
         self.active_piece.position.y += 1;
 
-        if is_invalid_state(&self.active_piece, &self.board)
-        {
+        if is_invalid_state(&self.active_piece, &self.board) {
             self.active_piece.position.y -= 1;
         }
     }
@@ -96,8 +107,7 @@ impl Game {
     pub fn move_down_and_stick(self: &mut Game) {
         self.active_piece.position.y += 1;
 
-        if is_invalid_state(&self.active_piece, &self.board)
-        {
+        if is_invalid_state(&self.active_piece, &self.board) {
             self.active_piece.position.y -= 1;
 
             self.stick_current_piece();
