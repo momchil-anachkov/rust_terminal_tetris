@@ -64,11 +64,11 @@ impl Game {
         }
 
         if is_invalid_state(&self.active_piece, &self.board) {
-            self.try_and_move_up();
+            self.try_and_move_down_left();
         }
 
         if is_invalid_state(&self.active_piece, &self.board) {
-            self.try_and_move_down_left();
+            self.try_and_move_up();
         }
 
         if is_invalid_state(&self.active_piece, &self.board) {
@@ -96,11 +96,11 @@ impl Game {
         }
 
         if is_invalid_state(&self.active_piece, &self.board) {
-            self.try_and_move_up();
+            self.try_and_move_down_right();
         }
 
         if is_invalid_state(&self.active_piece, &self.board) {
-            self.try_and_move_down_right();
+            self.try_and_move_up();
         }
 
         if is_invalid_state(&self.active_piece, &self.board) {
