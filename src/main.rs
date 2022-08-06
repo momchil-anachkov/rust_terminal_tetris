@@ -2,7 +2,8 @@ mod tetris;
 
 use std::{time};
 use device_query::{DeviceQuery, DeviceState, Keycode};
-use crate::tetris::Game;
+use crate::tetris::{Game, MoveOutcome};
+use crate::tetris::MoveOutcome::{GameOver, SpawnedNewPiece};
 
 const TICK_INTERVAL_TIME: u128 = 1000000;
 const KEY_REPEAT_INTERVAL: u128 = 100000;
@@ -28,10 +29,11 @@ fn main() -> Result<(), ()> {
 
         let keys: Vec<Keycode> = device_state.get_keys();
 
-        // TODO: game
-        // Game over
-        //   I think the game wants to start returning some smarter data structures
-        //   So that we can coordinate better how everything works
+        // TODO game:
+        // Make a spawning sequence https://tetris.fandom.com/wiki/Random_Generator
+        // Show the next 4 pieces
+        // Hold piece
+        // Line clear animation
 
         // TODO code:
         // Make a renderer that takes the game state, and renders it to the terminal
@@ -56,15 +58,17 @@ fn main() -> Result<(), ()> {
                     GameMove::RotateClockwise => game.rotate_clockwise(),
                     GameMove::RotateCounterClockwise => game.rotate_counterclockwise(),
                     GameMove::Tick => {
-                        let new_piece_spawned = game.move_down_and_stick();
-                        if new_piece_spawned {
-                            input_system.reset_tick_timer();
+                        match game.move_down_and_stick() {
+                            SpawnedNewPiece => input_system.reset_tick_timer(),
+                            GameOver => return Ok(()),
+                            _ => {}
                         }
                     },
                     GameMove::Slam => {
-                        let new_piece_spawned = game.slam();
-                        if new_piece_spawned {
-                            input_system.reset_tick_timer();
+                        match game.slam() {
+                            SpawnedNewPiece => input_system.reset_tick_timer(),
+                            GameOver => return Ok(()),
+                            _ => {}
                         }
                     },
                 }

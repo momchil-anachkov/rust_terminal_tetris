@@ -3,6 +3,7 @@ use crossterm::terminal::{Clear, ClearType};
 use crossterm::cursor::{MoveToColumn, MoveToRow};
 use rand::Rng;
 use std::io::{stdout, Write};
+use crate::tetris::MoveOutcome::{GameOver, NothingSpecial, SpawnedNewPiece};
 
 pub const BOARD_WIDTH:  usize = 10;
 pub const BOARD_HEIGHT: usize = 20;
@@ -184,7 +185,7 @@ impl Game {
         }
     }
 
-    pub fn move_down_and_stick(self: &mut Game) -> bool {
+    pub fn move_down_and_stick(self: &mut Game) -> MoveOutcome {
         self.active_piece.position.y += 1;
 
         if is_invalid_state(&self.active_piece, &self.board) {
@@ -192,13 +193,18 @@ impl Game {
 
             self.stick_current_piece();
             self.spawn_next_piece();
-            return true;
+
+            if is_invalid_state(&self.active_piece, &self.board) {
+                return GameOver;
+            } else {
+                return SpawnedNewPiece;
+            }
         }
 
-        return false;
+        return NothingSpecial;
     }
 
-    pub fn slam(self: &mut Game) -> bool {
+    pub fn slam(self: &mut Game) -> MoveOutcome {
         loop {
             self.active_piece.position.y += 1;
 
@@ -207,7 +213,12 @@ impl Game {
 
                 self.stick_current_piece();
                 self.spawn_next_piece();
-                return true;
+
+                if is_invalid_state(&self.active_piece, &self.board) {
+                    return GameOver;
+                } else {
+                    return SpawnedNewPiece;
+                }
             }
         }
     }
@@ -579,6 +590,13 @@ impl Piece {
             ],
         }
     }
+}
+
+#[derive(PartialEq)]
+pub enum MoveOutcome {
+    SpawnedNewPiece,
+    GameOver,
+    NothingSpecial,
 }
 
 fn calculate_and_create_ghost_piece(piece: &Piece, board: &Board) -> Piece {
