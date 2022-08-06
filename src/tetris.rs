@@ -206,6 +206,7 @@ pub struct Block {
     pub pattern: char,
 }
 
+/// Piece rotations are in clockwise order
 impl Piece {
     fn blocks(self: &Piece) -> &[Vector2; 4] {
         return &self.rotations[self.current_rotation];
@@ -268,6 +269,12 @@ impl Piece {
             current_rotation: 0,
             rotations: [
                 [
+                    Vector2 { x: -1, y:  0 },
+                    Vector2 { x:  0, y:  0 },
+                    Vector2 { x:  1, y:  0 },
+                    Vector2 { x:  1, y: -1 },
+                ],
+                [
                     Vector2 { x: 0, y: -1 },
                     Vector2 { x: 0, y:  0 },
                     Vector2 { x: 0, y:  1 },
@@ -285,12 +292,6 @@ impl Piece {
                     Vector2 { x:  0, y: 0  },
                     Vector2 { x:  0, y: 1  },
                 ],
-                [
-                    Vector2 { x: -1, y:  0 },
-                    Vector2 { x:  0, y:  0 },
-                    Vector2 { x:  1, y:  0 },
-                    Vector2 { x:  1, y: -1 },
-                ],
             ],
         }
     }
@@ -301,12 +302,6 @@ impl Piece {
             position: Vector2 { x: 0, y: 0 },
             current_rotation: 0,
             rotations: [
-                [
-                    Vector2 { x:  0, y: -1 },
-                    Vector2 { x:  0, y:  0 },
-                    Vector2 { x:  0, y:  1 },
-                    Vector2 { x: -1, y:  1 },
-                ],
                 [
                     Vector2 { x: -1, y: -1 },
                     Vector2 { x: -1, y:  0 },
@@ -324,6 +319,12 @@ impl Piece {
                     Vector2 { x:  0, y: 0 },
                     Vector2 { x:  1, y: 0 },
                     Vector2 { x:  1, y: 1 },
+                ],
+                [
+                    Vector2 { x:  0, y: -1 },
+                    Vector2 { x:  0, y:  0 },
+                    Vector2 { x:  0, y:  1 },
+                    Vector2 { x: -1, y:  1 },
                 ],
             ],
         }
@@ -438,18 +439,6 @@ impl Piece {
             current_rotation: 0,
             rotations: [
                 [
-                    Vector2 { x: -1, y: 0 },
-                    Vector2 { x:  0, y: 0 },
-                    Vector2 { x:  0, y: 1 },
-                    Vector2 { x:  1, y: 0 },
-                ],
-                [
-                    Vector2 { x:  0, y: -1 },
-                    Vector2 { x:  0, y:  0 },
-                    Vector2 { x: -1, y:  0 },
-                    Vector2 { x:  0, y:  1 },
-                ],
-                [
                     Vector2 { x: -1, y:  0 },
                     Vector2 { x:  0, y:  0 },
                     Vector2 { x:  0, y: -1 },
@@ -460,6 +449,18 @@ impl Piece {
                     Vector2 { x: 0, y:  0 },
                     Vector2 { x: 1, y:  0 },
                     Vector2 { x: 0, y:  1 },
+                ],
+                [
+                    Vector2 { x: -1, y: 0 },
+                    Vector2 { x:  0, y: 0 },
+                    Vector2 { x:  0, y: 1 },
+                    Vector2 { x:  1, y: 0 },
+                ],
+                [
+                    Vector2 { x:  0, y: -1 },
+                    Vector2 { x:  0, y:  0 },
+                    Vector2 { x: -1, y:  0 },
+                    Vector2 { x:  0, y:  1 },
                 ],
             ],
         }

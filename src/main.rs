@@ -28,10 +28,15 @@ fn main() -> Result<(), ()> {
 
         let keys: Vec<Keycode> = device_state.get_keys();
 
-        // TODO:
+        // TODO code:
         // Make a renderer that takes the game state, and renders it to the terminal
         //   instead of having the game print itself and know about stdout
         //   that seems like a poor idea long-term
+
+        // TODO game:
+        // Make the tick timer reset when you spawn a piece
+        //   right now what can happen is that you spawn a piece and it immediately ticks down
+        //   and that's not really intuitive
 
         let command = input_system.process_input(keys, delta_time);
 
