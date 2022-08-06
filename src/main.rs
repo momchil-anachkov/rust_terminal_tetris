@@ -165,15 +165,15 @@ impl InputSystem {
             return self.return_command(Command::MakeGameMove(GameMove::Tick));
         }
 
-        if keys.contains(&Keycode::Left) && keys.contains(&Keycode::Right) {
+        if self.current_frame_keys.contains(&Keycode::Left) && self.current_frame_keys.contains(&Keycode::Right) {
             return self.return_command(Command::NoOp);
         }
 
-        if keys.contains(&Keycode::Escape) || keys.contains(&Keycode::LControl) && keys.contains(&Keycode::C) {
+        if self.current_frame_keys.contains(&Keycode::Escape) || self.current_frame_keys.contains(&Keycode::LControl) && self.current_frame_keys.contains(&Keycode::C) {
             return self.return_command(Command::Exit);
         }
 
-        if keys.contains(&Keycode::Left) {
+        if self.current_frame_keys.contains(&Keycode::Left) {
             if self.last_frame_keys.contains(&Keycode::Left) {
                 self.time_since_last_left += delta_time;
                 if self.time_since_last_left > KEY_REPEAT_INTERVAL {
@@ -187,7 +187,7 @@ impl InputSystem {
             self.time_since_last_left = 0;
         }
 
-        if keys.contains(&Keycode::Right) {
+        if self.current_frame_keys.contains(&Keycode::Right) {
             if self.last_frame_keys.contains(&Keycode::Right) {
                 self.time_since_last_right += delta_time;
                 if self.time_since_last_right > KEY_REPEAT_INTERVAL {
@@ -201,7 +201,7 @@ impl InputSystem {
             self.time_since_last_right = 0;
         }
 
-        if keys.contains(&Keycode::Down) {
+        if self.current_frame_keys.contains(&Keycode::Down) {
             if self.last_frame_keys.contains(&Keycode::Down) {
                 self.time_since_last_down += delta_time;
                 if self.time_since_last_down > KEY_REPEAT_INTERVAL {
@@ -215,12 +215,16 @@ impl InputSystem {
             self.time_since_last_down = 0;
         }
 
-        if keys.contains(&Keycode::Z) || keys.contains(&Keycode::Up) {
-            return self.return_command(Command::MakeGameMove(GameMove::RotateClockwise));
+        if self.current_frame_keys.contains(&Keycode::Z) || self.current_frame_keys.contains(&Keycode::Up) {
+            if !self.last_frame_keys.contains(&Keycode::Z) && !self.last_frame_keys.contains(&Keycode::Up) {
+                return self.return_command(Command::MakeGameMove(GameMove::RotateClockwise));
+            }
         }
 
-        if keys.contains(&Keycode::X) {
-            return self.return_command(Command::MakeGameMove(GameMove::RotateCounterClockwise));
+        if self.current_frame_keys.contains(&Keycode::X) {
+            if !self.last_frame_keys.contains(&Keycode::X) {
+                return self.return_command(Command::MakeGameMove(GameMove::RotateCounterClockwise));
+            }
         }
 
         return self.return_command(Command::NoOp);
