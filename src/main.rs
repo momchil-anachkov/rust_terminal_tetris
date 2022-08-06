@@ -32,6 +32,9 @@ fn main() -> Result<(), ()> {
         // Make a renderer that takes the game state, and renders it to the terminal
         //   instead of having the game print itself and know about stdout
         //   that seems like a poor idea long-term
+        //
+        // Add tests for the game rules (moving, rotations, slamming etc.)
+        // Add tests for the input systems (key priority, edge-cases like left&right at the same time, etc.)
 
         let command = input_system.process_input(keys, delta_time);
 
