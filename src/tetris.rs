@@ -35,7 +35,7 @@ impl Game {
 
     fn make_random_piece() -> Piece {
         let mut rng = rand::thread_rng();
-        let number: u8 = rng.gen_range(0..6);
+        let number: u8 = rng.gen_range(0..=6);
         match number {
             0 => Piece::make_square(),
             1 => Piece::make_i(),
@@ -52,11 +52,27 @@ impl Game {
         self.active_piece.rotate_clockwise();
 
         if is_invalid_state(&self.active_piece, &self.board) {
-            self.move_left();
+            self.try_and_move_left();
         }
 
         if is_invalid_state(&self.active_piece, &self.board) {
-            self.move_right();
+            self.try_and_move_right();
+        }
+
+        if is_invalid_state(&self.active_piece, &self.board) {
+            self.try_and_move_down();
+        }
+
+        if is_invalid_state(&self.active_piece, &self.board) {
+            self.try_and_move_up();
+        }
+
+        if is_invalid_state(&self.active_piece, &self.board) {
+            self.try_and_move_down_left();
+        }
+
+        if is_invalid_state(&self.active_piece, &self.board) {
+            self.try_and_move_up_right();
         }
 
         if is_invalid_state(&self.active_piece, &self.board) {
@@ -68,11 +84,27 @@ impl Game {
         self.active_piece.rotate_counterclockwise();
 
         if is_invalid_state(&self.active_piece, &self.board) {
-            self.move_left();
+            self.try_and_move_left();
         }
 
         if is_invalid_state(&self.active_piece, &self.board) {
-            self.move_right();
+            self.try_and_move_right();
+        }
+
+        if is_invalid_state(&self.active_piece, &self.board) {
+            self.try_and_move_down();
+        }
+
+        if is_invalid_state(&self.active_piece, &self.board) {
+            self.try_and_move_up();
+        }
+
+        if is_invalid_state(&self.active_piece, &self.board) {
+            self.try_and_move_down_right();
+        }
+
+        if is_invalid_state(&self.active_piece, &self.board) {
+            self.try_and_move_up_left();
         }
 
         if is_invalid_state(&self.active_piece, &self.board) {
@@ -80,7 +112,7 @@ impl Game {
         }
     }
 
-    pub fn move_left(self: &mut Game) {
+    pub fn try_and_move_left(self: &mut Game) {
         self.active_piece.position.x -= 1;
 
         if is_invalid_state(&self.active_piece, &self.board) {
@@ -88,7 +120,7 @@ impl Game {
         }
     }
 
-    pub fn move_right(self: &mut Game) {
+    pub fn try_and_move_right(self: &mut Game) {
         self.active_piece.position.x += 1;
 
         if is_invalid_state(&self.active_piece, &self.board) {
@@ -96,11 +128,59 @@ impl Game {
         }
     }
 
-    pub fn move_down(self: &mut Game) {
+    pub fn try_and_move_down(self: &mut Game) {
         self.active_piece.position.y += 1;
 
         if is_invalid_state(&self.active_piece, &self.board) {
             self.active_piece.position.y -= 1;
+        }
+    }
+
+    fn try_and_move_up(self: &mut Game) {
+        self.active_piece.position.x += 1;
+
+        if is_invalid_state(&self.active_piece, &self.board) {
+            self.active_piece.position.x -= 1;
+        }
+    }
+
+    fn try_and_move_up_left(self: &mut Game) {
+        self.active_piece.position.y -= 1;
+        self.active_piece.position.x -= 1;
+
+        if is_invalid_state(&self.active_piece, &self.board) {
+            self.active_piece.position.y += 1;
+            self.active_piece.position.x += 1;
+        }
+    }
+
+    fn try_and_move_up_right(self: &mut Game) {
+        self.active_piece.position.y -= 1;
+        self.active_piece.position.x += 1;
+
+        if is_invalid_state(&self.active_piece, &self.board) {
+            self.active_piece.position.y += 1;
+            self.active_piece.position.x -= 1;
+        }
+    }
+
+    fn try_and_move_down_left(self: &mut Game) {
+        self.active_piece.position.y += 1;
+        self.active_piece.position.x -= 1;
+
+        if is_invalid_state(&self.active_piece, &self.board) {
+            self.active_piece.position.y -= 1;
+            self.active_piece.position.x += 1;
+        }
+    }
+
+    fn try_and_move_down_right(self: &mut Game) {
+        self.active_piece.position.y += 1;
+        self.active_piece.position.x += 1;
+
+        if is_invalid_state(&self.active_piece, &self.board) {
+            self.active_piece.position.y -= 1;
+            self.active_piece.position.x -= 1;
         }
     }
 
@@ -118,6 +198,7 @@ impl Game {
     pub fn slam(self: &mut Game) {
         loop {
             self.active_piece.position.y += 1;
+
             if is_invalid_state(&self.active_piece, &self.board) {
                 self.active_piece.position.y -=1;
 

@@ -48,9 +48,9 @@ fn main() -> Result<(), ()> {
             Command::MakeGameMove(game_move) => {
                 match game_move {
                     GameMove::Tick => game.move_down_and_stick(),
-                    GameMove::MoveLeft => game.move_left(),
-                    GameMove::MoveRight => game.move_right(),
-                    GameMove::MoveDown => game.move_down(),
+                    GameMove::MoveLeft => game.try_and_move_left(),
+                    GameMove::MoveRight => game.try_and_move_right(),
+                    GameMove::MoveDown => game.try_and_move_down(),
                     GameMove::RotateClockwise => game.rotate_clockwise(),
                     GameMove::RotateCounterClockwise => game.rotate_counterclockwise(),
                     GameMove::Slam => game.slam(),
