@@ -26,7 +26,6 @@ fn main() -> Result<(), ()> {
         delta_time = now - last_frame_start_time;
         last_frame_start_time = now;
 
-
         let keys: Vec<Keycode> = device_state.get_keys();
 
         // TODO:
