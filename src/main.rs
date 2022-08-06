@@ -31,6 +31,8 @@ fn main() -> Result<(), ()> {
 
         // TODO:
         // Make a renderer that takes the game state, and renders it to the terminal
+        //   instead of having the game print itself and know about stdout
+        //   that seems like a poor idea long-term
 
         let command = input_system.process_input(keys, delta_time);
 
