@@ -222,6 +222,26 @@ impl Game {
         self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[1].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[1].x) as usize].pattern = self.active_piece.pattern;
         self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[2].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[2].x) as usize].pattern = self.active_piece.pattern;
         self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[3].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[3].x) as usize].pattern = self.active_piece.pattern;
+
+        for line_index in 0..self.board.blocks.len() {
+            let line = self.board.blocks[line_index];
+            let mut line_is_full = true;
+
+            for block in line.iter() {
+                if !block.filled {
+                    line_is_full = false;
+                }
+            }
+
+            if line_is_full {
+                for upper_line_index in (1..=line_index).rev() {
+                    for column_index in 0..line.len() {
+                        self.board.blocks[upper_line_index][column_index].filled = self.board.blocks[upper_line_index-1][column_index].filled;
+                        self.board.blocks[upper_line_index][column_index].pattern = self.board.blocks[upper_line_index-1][column_index].pattern;
+                    }
+                }
+            }
+        }
     }
 
     pub fn print_board(self: &mut Game) {

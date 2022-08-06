@@ -28,6 +28,11 @@ fn main() -> Result<(), ()> {
 
         let keys: Vec<Keycode> = device_state.get_keys();
 
+        // TODO: game
+        // Game over
+        //   I think the game wants to start returning some smarter data structures
+        //   So that we can coordinate better how everything works
+
         // TODO code:
         // Make a renderer that takes the game state, and renders it to the terminal
         //   instead of having the game print itself and know about stdout
