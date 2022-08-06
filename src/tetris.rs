@@ -1,6 +1,6 @@
 use crossterm::execute;
 use crossterm::terminal::{Clear, ClearType};
-use crossterm::cursor::{MoveLeft, MoveUp, MoveToColumn, MoveToRow, MoveDown};
+use crossterm::cursor::{MoveToColumn, MoveToRow};
 use rand::Rng;
 use std::io::{stdout, Write};
 

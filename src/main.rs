@@ -1,28 +1,16 @@
 mod tetris;
 
-use std::io::{stdout};
-use crossterm::{execute};
-use crossterm::cursor::{MoveLeft, MoveUp};
-use std::{thread, time};
-use std::time::{Duration, Instant};
-use crossterm::terminal::{Clear, ClearType};
+use std::{time};
 use device_query::{DeviceQuery, DeviceState, Keycode};
-use rand::Rng;
 use crate::tetris::Game;
 
 const TICK_INTERVAL_TIME: u128 = 1000000;
-const KEY_REPEAT_DELAY: u128 = 200000;
 const KEY_REPEAT_INTERVAL: u128 = 100000;
 
 fn main() -> Result<(), ()> {
     let mut last_frame_start_time: u128 = 0;
     let mut now: u128;
     let mut delta_time: u128;
-    let mut time_since_last_tick: u128 = 0;
-    let mut time_since_last_key_repeat: u128 = 0;
-    let mut time_since_key_down: u128 = 0;
-    let mut key_is_pressed: bool = false;
-    let mut state_changed: bool;
     let device_state = DeviceState::new();
     let mut input_system = InputSystem::new();
 
@@ -34,25 +22,15 @@ fn main() -> Result<(), ()> {
 
     let start = time::Instant::now();
     loop {
-        state_changed = false;
         now = start.elapsed().as_micros();
         delta_time = now - last_frame_start_time;
         last_frame_start_time = now;
 
-        time_since_last_tick += delta_time;
 
         let keys: Vec<Keycode> = device_state.get_keys();
 
         // TODO:
-        // Build a command system that reads the inputs + delta_time and decides what commands to run
-        // Process the command with the Game object and map it to a method
         // Make a renderer that takes the game state, and renders it to the terminal
-
-        if keys.is_empty() {
-            key_is_pressed = false;
-            time_since_last_key_repeat = 0;
-            time_since_key_down = 0;
-        }
 
         let command = input_system.process_input(keys, delta_time);
 
@@ -74,46 +52,6 @@ fn main() -> Result<(), ()> {
             }
             Command::NoOp => {}
             Command::Exit => {}
-        }
-
-        // if keys.contains(&Keycode::LControl) && keys.contains(&Keycode::C) {
-        //     crossterm::terminal::disable_raw_mode().unwrap();
-        //     return Ok(());
-        // }
-        //
-        // for key in keys.iter() {
-        //     if key.eq(&Keycode::Escape) {
-        //         crossterm::terminal::disable_raw_mode().unwrap();
-        //         return Ok(());
-        //     }
-        //
-        //     if !key_is_pressed {
-        //         key_is_pressed = true;
-        //         process_keypress(key, &mut game);
-        //         state_changed = true;
-        //     } else {
-        //         time_since_key_down += delta_time;
-        //     }
-        //
-        //     if time_since_key_down > KEY_REPEAT_DELAY {
-        //         time_since_last_key_repeat += delta_time;
-        //     }
-        //
-        //     if time_since_last_key_repeat > KEY_REPEAT_INTERVAL {
-        //         time_since_last_key_repeat -= KEY_REPEAT_INTERVAL;
-        //         process_keypress(key, &mut game);
-        //         state_changed = true;
-        //     }
-        // }
-        //
-        // if time_since_last_tick > TICK_INTERVAL_TIME {
-        //     time_since_last_tick -= TICK_INTERVAL_TIME;
-        //     game.move_down_and_stick();
-        //     state_changed = true;
-        // }
-
-        if state_changed {
-            game.print_board();
         }
     }
 }
@@ -233,63 +171,5 @@ impl InputSystem {
     fn return_command(&mut self, command: Command) -> Command {
         self.last_frame_keys = self.current_frame_keys.clone();
         return command;
-    }
-}
-
-fn process_input(keys: &Vec<Keycode>) -> Command {
-    if keys.contains(&Keycode::Left) && keys.contains(&Keycode::Right) {
-        return Command::NoOp;
-    }
-
-    if keys.contains(&Keycode::Escape) || keys.contains(&Keycode::LControl) && keys.contains(&Keycode::C) {
-        return Command::Exit;
-    }
-
-    if keys.contains(&Keycode::Left) {
-        return Command::MakeGameMove(GameMove::MoveLeft);
-    }
-
-    if keys.contains(&Keycode::Right) {
-        return Command::MakeGameMove(GameMove::MoveRight);
-    }
-
-    if keys.contains(&Keycode::Down) {
-        return Command::MakeGameMove(GameMove::MoveDown);
-    }
-
-    if keys.contains(&Keycode::Z) || keys.contains(&Keycode::Up) {
-        return Command::MakeGameMove(GameMove::RotateClockwise);
-    }
-
-    if keys.contains(&Keycode::X) {
-        return Command::MakeGameMove(GameMove::RotateCounterClockwise);
-    }
-
-    return Command::NoOp;
-}
-
-fn process_keypress(key: &Keycode, game: &mut Game) {
-    if key.eq(&Keycode::Escape) {
-        return;
-    }
-
-    if key.eq(&Keycode::Left) {
-        game.move_left();
-    }
-
-    if key.eq(&Keycode::Right) {
-        game.move_right();
-    }
-
-    if key.eq(&Keycode::Down) {
-        game.move_down();
-    }
-
-    if key.eq(&Keycode::Z) || key.eq(&Keycode::Up) {
-        game.rotate_counterclockwise();
-    }
-
-    if key.eq(&Keycode::X) {
-        game.rotate_clockwise();
     }
 }
