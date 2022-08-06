@@ -33,11 +33,6 @@ fn main() -> Result<(), ()> {
         //   instead of having the game print itself and know about stdout
         //   that seems like a poor idea long-term
 
-        // TODO game:
-        // Make the tick timer reset when you spawn a piece
-        //   right now what can happen is that you spawn a piece and it immediately ticks down
-        //   and that's not really intuitive
-
         let command = input_system.process_input(keys, delta_time);
 
         if command == Command::Exit {
@@ -47,13 +42,23 @@ fn main() -> Result<(), ()> {
         match command {
             Command::MakeGameMove(game_move) => {
                 match game_move {
-                    GameMove::Tick => game.move_down_and_stick(),
                     GameMove::MoveLeft => game.try_and_move_left(),
                     GameMove::MoveRight => game.try_and_move_right(),
                     GameMove::MoveDown => game.try_and_move_down(),
                     GameMove::RotateClockwise => game.rotate_clockwise(),
                     GameMove::RotateCounterClockwise => game.rotate_counterclockwise(),
-                    GameMove::Slam => game.slam(),
+                    GameMove::Tick => {
+                        let new_piece_spawned = game.move_down_and_stick();
+                        if new_piece_spawned {
+                            input_system.reset_tick_timer();
+                        }
+                    },
+                    GameMove::Slam => {
+                        let new_piece_spawned = game.slam();
+                        if new_piece_spawned {
+                            input_system.reset_tick_timer();
+                        }
+                    },
                 }
                 game.print_board();
             }
@@ -65,12 +70,12 @@ fn main() -> Result<(), ()> {
 
 #[derive(PartialEq)]
 enum GameMove {
-    Tick,
     MoveLeft,
     MoveRight,
     MoveDown,
     RotateClockwise,
     RotateCounterClockwise,
+    Tick,
     Slam,
 }
 
@@ -180,6 +185,10 @@ impl InputSystem {
         }
 
         return self.return_command(Command::NoOp);
+    }
+
+    fn reset_tick_timer(&mut self) {
+        self.time_since_last_tick = 0;
     }
 
     fn return_command(&mut self, command: Command) -> Command {

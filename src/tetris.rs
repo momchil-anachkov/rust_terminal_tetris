@@ -184,7 +184,7 @@ impl Game {
         }
     }
 
-    pub fn move_down_and_stick(self: &mut Game) {
+    pub fn move_down_and_stick(self: &mut Game) -> bool {
         self.active_piece.position.y += 1;
 
         if is_invalid_state(&self.active_piece, &self.board) {
@@ -192,10 +192,13 @@ impl Game {
 
             self.stick_current_piece();
             self.spawn_next_piece();
+            return true;
         }
+
+        return false;
     }
 
-    pub fn slam(self: &mut Game) {
+    pub fn slam(self: &mut Game) -> bool {
         loop {
             self.active_piece.position.y += 1;
 
@@ -204,7 +207,7 @@ impl Game {
 
                 self.stick_current_piece();
                 self.spawn_next_piece();
-                break;
+                return true;
             }
         }
     }
