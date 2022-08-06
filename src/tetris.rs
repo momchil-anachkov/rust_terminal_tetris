@@ -26,8 +26,11 @@ impl Game {
 
     fn spawn_next_piece(self: &mut Game) {
         self.active_piece = Game::make_random_piece();
-        self.active_piece.position.y = 0 + self.active_piece.spawn_offset.y;
-        self.active_piece.position.x = 0 + self.active_piece.spawn_offset.x;
+        self.active_piece.position.y = 0;
+        self.active_piece.position.x = 4;
+        if is_invalid_state(&self.active_piece, &self.board) {
+            self.active_piece.position.y += 1;
+        }
     }
 
     fn make_random_piece() -> Piece {
@@ -187,7 +190,6 @@ pub struct Vector2 {
 #[derive(Clone)]
 pub struct Piece {
     position: Vector2,
-    spawn_offset: Vector2,
     current_rotation: usize,
     rotations: [[Vector2; 4]; 4],
     pattern: char,
@@ -229,7 +231,6 @@ impl Piece {
         return Piece {
             pattern: '🟨',
             position: Vector2 { x: 0, y: 0 },
-            spawn_offset: Vector2 { x: 0, y: 0 },
             current_rotation: 0,
             rotations: [
                 [
@@ -264,7 +265,6 @@ impl Piece {
         return Piece {
             pattern: '🟧',
             position: Vector2 { x: 0, y: 0 },
-            spawn_offset: Vector2 { x: 0, y: 1 },
             current_rotation: 0,
             rotations: [
                 [
@@ -299,7 +299,6 @@ impl Piece {
         return Piece {
             pattern: '🟦',
             position: Vector2 { x: 0, y: 0 },
-            spawn_offset: Vector2 { x: 1, y: 1 },
             current_rotation: 0,
             rotations: [
                 [
@@ -334,7 +333,6 @@ impl Piece {
         return Piece {
             pattern: '🟩',
             position: Vector2 { x: 0, y: 0 },
-            spawn_offset: Vector2 { x: 1, y: 0 },
             current_rotation: 0,
             rotations: [
                 [
@@ -369,7 +367,6 @@ impl Piece {
         return Piece {
             pattern: '🟥',
             position: Vector2 { x: 0, y: 0 },
-            spawn_offset: Vector2 { x: 1, y: 0 },
             current_rotation: 0,
             rotations: [
                 [
@@ -404,7 +401,6 @@ impl Piece {
         return Piece {
             pattern: '🟪',
             position: Vector2 { x: 0, y: 0 },
-            spawn_offset: Vector2 { x: 1, y: 0 },
             current_rotation: 0,
             rotations: [
                 [
@@ -439,7 +435,6 @@ impl Piece {
         return Piece {
             pattern: '🟫',
             position: Vector2 { x: 0, y: 0 },
-            spawn_offset: Vector2 { x: 1, y: 0 },
             current_rotation: 0,
             rotations: [
                 [
