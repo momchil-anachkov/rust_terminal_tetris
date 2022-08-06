@@ -141,6 +141,7 @@ struct InputSystem {
     time_since_last_tick: u128,
     time_since_last_left: u128,
     time_since_last_right: u128,
+    time_since_last_down: u128,
 }
 
 impl InputSystem {
@@ -151,6 +152,7 @@ impl InputSystem {
             time_since_last_tick: 0,
             time_since_last_left: 0,
             time_since_last_right: 0,
+            time_since_last_down: 0,
         }
     }
 
@@ -195,13 +197,22 @@ impl InputSystem {
             } else {
                 return self.return_command(Command::MakeGameMove(GameMove::MoveRight));
             }
-            return self.return_command(Command::MakeGameMove(GameMove::MoveRight));
         } else {
             self.time_since_last_right = 0;
         }
 
         if keys.contains(&Keycode::Down) {
-            return self.return_command(Command::MakeGameMove(GameMove::MoveDown));
+            if self.last_frame_keys.contains(&Keycode::Down) {
+                self.time_since_last_down += delta_time;
+                if self.time_since_last_down > KEY_REPEAT_INTERVAL {
+                    self.time_since_last_down -= KEY_REPEAT_INTERVAL;
+                    return self.return_command(Command::MakeGameMove(GameMove::MoveDown));
+                }
+            } else {
+                return self.return_command(Command::MakeGameMove(GameMove::MoveDown));
+            }
+        } else {
+            self.time_since_last_down = 0;
         }
 
         if keys.contains(&Keycode::Z) || keys.contains(&Keycode::Up) {
@@ -211,8 +222,6 @@ impl InputSystem {
         if keys.contains(&Keycode::X) {
             return self.return_command(Command::MakeGameMove(GameMove::RotateCounterClockwise));
         }
-
-        self.last_frame_keys = keys;
 
         return self.return_command(Command::NoOp);
     }
