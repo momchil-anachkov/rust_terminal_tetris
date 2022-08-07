@@ -1,8 +1,10 @@
 mod tetris;
 mod renderer;
+mod input_system;
 
 use std::{time};
 use device_query::{DeviceQuery, DeviceState, Keycode};
+use crate::input_system::{Command, GameMove, InputSystem};
 use crate::tetris::{Game, GameState};
 use crate::tetris::MoveOutcome::{GameOver, SpawnedNewPiece};
 
@@ -14,7 +16,7 @@ fn main() -> Result<(), ()> {
     let mut now: u128;
     let mut delta_time: u128;
     let device_state = DeviceState::new();
-    let mut input_system = InputSystem::new();
+    let mut input_system = InputSystem::new(TICK_INTERVAL_TIME, KEY_REPEAT_INTERVAL);
 
     let mut game: Game = Game::new();
 
@@ -82,131 +84,3 @@ fn exit() -> Result<(), ()> {
     return Ok(());
 }
 
-#[derive(PartialEq)]
-enum GameMove {
-    MoveLeft,
-    MoveRight,
-    MoveDown,
-    RotateClockwise,
-    RotateCounterClockwise,
-    Tick,
-    Slam,
-}
-
-#[derive(PartialEq)]
-enum Command {
-    MakeGameMove(GameMove),
-    NoOp,
-    Exit,
-}
-
-struct InputSystem {
-    last_frame_keys: Vec<Keycode>,
-    current_frame_keys: Vec<Keycode>,
-    time_since_last_tick: u128,
-    time_since_last_left: u128,
-    time_since_last_right: u128,
-    time_since_last_down: u128,
-}
-
-impl InputSystem {
-    fn new() -> InputSystem {
-        return InputSystem {
-            last_frame_keys: Vec::new(),
-            current_frame_keys: Vec::new(),
-            time_since_last_tick: 0,
-            time_since_last_left: 0,
-            time_since_last_right: 0,
-            time_since_last_down: 0,
-        }
-    }
-
-    fn process_input(&mut self, keys: Vec<Keycode>, delta_time: u128) -> Command {
-        self.current_frame_keys = keys.clone(); // TODO: Figure out how to do this with references
-        self.time_since_last_tick += delta_time;
-
-        if self.time_since_last_tick > TICK_INTERVAL_TIME {
-            self.time_since_last_tick -= TICK_INTERVAL_TIME;
-            return self.return_command(Command::MakeGameMove(GameMove::Tick));
-        }
-
-        if self.current_frame_keys.contains(&Keycode::Left) && self.current_frame_keys.contains(&Keycode::Right) {
-            return self.return_command(Command::NoOp);
-        }
-
-        if self.current_frame_keys.contains(&Keycode::Escape) || self.current_frame_keys.contains(&Keycode::LControl) && self.current_frame_keys.contains(&Keycode::C) {
-            return self.return_command(Command::Exit);
-        }
-
-        if self.current_frame_keys.contains(&Keycode::Left) {
-            if self.last_frame_keys.contains(&Keycode::Left) {
-                self.time_since_last_left += delta_time;
-                if self.time_since_last_left > KEY_REPEAT_INTERVAL {
-                    self.time_since_last_left -= KEY_REPEAT_INTERVAL;
-                    return self.return_command(Command::MakeGameMove(GameMove::MoveLeft));
-                }
-            } else {
-                return self.return_command(Command::MakeGameMove(GameMove::MoveLeft));
-            }
-        } else {
-            self.time_since_last_left = 0;
-        }
-
-        if self.current_frame_keys.contains(&Keycode::Right) {
-            if self.last_frame_keys.contains(&Keycode::Right) {
-                self.time_since_last_right += delta_time;
-                if self.time_since_last_right > KEY_REPEAT_INTERVAL {
-                    self.time_since_last_right -= KEY_REPEAT_INTERVAL;
-                    return self.return_command(Command::MakeGameMove(GameMove::MoveRight));
-                }
-            } else {
-                return self.return_command(Command::MakeGameMove(GameMove::MoveRight));
-            }
-        } else {
-            self.time_since_last_right = 0;
-        }
-
-        if self.current_frame_keys.contains(&Keycode::Down) {
-            if self.last_frame_keys.contains(&Keycode::Down) {
-                self.time_since_last_down += delta_time;
-                if self.time_since_last_down > KEY_REPEAT_INTERVAL {
-                    self.time_since_last_down -= KEY_REPEAT_INTERVAL;
-                    return self.return_command(Command::MakeGameMove(GameMove::MoveDown));
-                }
-            } else {
-                return self.return_command(Command::MakeGameMove(GameMove::MoveDown));
-            }
-        } else {
-            self.time_since_last_down = 0;
-        }
-
-        if self.current_frame_keys.contains(&Keycode::Z) || self.current_frame_keys.contains(&Keycode::Up) {
-            if !self.last_frame_keys.contains(&Keycode::Z) && !self.last_frame_keys.contains(&Keycode::Up) {
-                return self.return_command(Command::MakeGameMove(GameMove::RotateClockwise));
-            }
-        }
-
-        if self.current_frame_keys.contains(&Keycode::X) {
-            if !self.last_frame_keys.contains(&Keycode::X) {
-                return self.return_command(Command::MakeGameMove(GameMove::RotateCounterClockwise));
-            }
-        }
-
-        if self.current_frame_keys.contains(&Keycode::Space) {
-            if !self.last_frame_keys.contains(&Keycode::Space) {
-                return self.return_command(Command::MakeGameMove(GameMove::Slam));
-            }
-        }
-
-        return self.return_command(Command::NoOp);
-    }
-
-    fn reset_tick_timer(&mut self) {
-        self.time_since_last_tick = 0;
-    }
-
-    fn return_command(&mut self, command: Command) -> Command {
-        self.last_frame_keys = self.current_frame_keys.clone();
-        return command;
-    }
-}
