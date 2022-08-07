@@ -15,6 +15,20 @@ pub enum PieceType {
     T
 }
 
+#[derive(Copy)]
+#[derive(Clone)]
+pub enum BlockType {
+    O,
+    I,
+    L,
+    J,
+    S,
+    Z,
+    T,
+    Ghost,
+    Empty,
+}
+
 pub struct GameState {
     pub active_piece: Piece,
     pub ghost_piece: Piece,
@@ -31,7 +45,7 @@ pub struct Game {
 impl Game {
     pub fn new() -> Game {
         let board = Board {
-            blocks: [[Block { filled: false, pattern: '🖤' }; 10]; 20]
+            blocks: [[Block { filled: false, block_type: BlockType::Empty }; 10]; 20]
         };
 
         let sequence_index: usize = 0;
@@ -284,10 +298,10 @@ impl Game {
         self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[2].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[2].x) as usize].filled = true;
         self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[3].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[3].x) as usize].filled = true;
 
-        self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[0].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[0].x) as usize].pattern = self.active_piece.pattern;
-        self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[1].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[1].x) as usize].pattern = self.active_piece.pattern;
-        self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[2].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[2].x) as usize].pattern = self.active_piece.pattern;
-        self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[3].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[3].x) as usize].pattern = self.active_piece.pattern;
+        self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[0].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[0].x) as usize].block_type = self.active_piece.block_type;
+        self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[1].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[1].x) as usize].block_type = self.active_piece.block_type;
+        self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[2].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[2].x) as usize].block_type = self.active_piece.block_type;
+        self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[3].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[3].x) as usize].block_type = self.active_piece.block_type;
 
         for line_index in 0..self.board.blocks.len() {
             let line = self.board.blocks[line_index];
@@ -303,7 +317,7 @@ impl Game {
                 for upper_line_index in (1..=line_index).rev() {
                     for column_index in 0..line.len() {
                         self.board.blocks[upper_line_index][column_index].filled = self.board.blocks[upper_line_index-1][column_index].filled;
-                        self.board.blocks[upper_line_index][column_index].pattern = self.board.blocks[upper_line_index-1][column_index].pattern;
+                        self.board.blocks[upper_line_index][column_index].block_type = self.board.blocks[upper_line_index-1][column_index].block_type;
                     }
                 }
             }
@@ -332,7 +346,7 @@ pub struct Vector2 {
 #[derive(Clone)]
 pub struct Piece {
     pub position: Vector2,
-    pub pattern: char,
+    pub block_type: BlockType,
     current_rotation: usize,
     rotations: [[Vector2; 4]; 4],
 }
@@ -347,7 +361,7 @@ pub struct Board {
 #[derive(Clone)]
 pub struct Block {
     pub filled: bool,
-    pub pattern: char,
+    pub block_type: BlockType,
 }
 
 /// Piece rotations are in clockwise order
@@ -374,7 +388,7 @@ impl Piece {
 
     fn make_o() -> Piece {
         return Piece {
-            pattern: '🟨',
+            block_type: BlockType::O,
             position: Vector2 { x: 0, y: 0 },
             current_rotation: 0,
             rotations: [
@@ -408,7 +422,7 @@ impl Piece {
 
     fn make_l() -> Piece {
         return Piece {
-            pattern: '🟧',
+            block_type: BlockType::L,
             position: Vector2 { x: 0, y: 0 },
             current_rotation: 0,
             rotations: [
@@ -442,7 +456,7 @@ impl Piece {
 
     fn make_j() -> Piece {
         return Piece {
-            pattern: '🟦',
+            block_type: BlockType::J,
             position: Vector2 { x: 0, y: 0 },
             current_rotation: 0,
             rotations: [
@@ -476,7 +490,7 @@ impl Piece {
 
     fn make_s() -> Piece {
         return Piece {
-            pattern: '🟩',
+            block_type: BlockType::S,
             position: Vector2 { x: 0, y: 0 },
             current_rotation: 0,
             rotations: [
@@ -510,7 +524,7 @@ impl Piece {
 
     fn make_z() -> Piece {
         return Piece {
-            pattern: '🟥',
+            block_type: BlockType::Z,
             position: Vector2 { x: 0, y: 0 },
             current_rotation: 0,
             rotations: [
@@ -544,7 +558,7 @@ impl Piece {
 
     fn make_i() -> Piece {
         return Piece {
-            pattern: '🟪',
+            block_type: BlockType::I,
             position: Vector2 { x: 0, y: 0 },
             current_rotation: 0,
             rotations: [
@@ -578,7 +592,7 @@ impl Piece {
 
     fn make_t() -> Piece {
         return Piece {
-            pattern: '🟫',
+            block_type: BlockType::T,
             position: Vector2 { x: 0, y: 0 },
             current_rotation: 0,
             rotations: [
@@ -620,7 +634,7 @@ pub enum MoveOutcome {
 
 fn calculate_and_create_ghost_piece(piece: &Piece, board: &Board) -> Piece {
     let mut ghost_piece = *piece;
-    ghost_piece.pattern = '🤍';
+    ghost_piece.block_type = BlockType::Ghost;
 
     loop {
         ghost_piece.position.y += 1;

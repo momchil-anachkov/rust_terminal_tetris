@@ -5,6 +5,7 @@ use crate::GameState;
 use crossterm::execute;
 use crossterm::terminal::{Clear, ClearType};
 use crossterm::cursor::{MoveToColumn, MoveToRow};
+use crate::tetris::BlockType;
 
 pub fn setup() {
     crossterm::terminal::enable_raw_mode().unwrap();
@@ -23,28 +24,27 @@ pub fn print_board(state: &GameState) {
         Clear(ClearType::FromCursorDown),
     ).unwrap();
 
-
     let mut simple_board: [[char; 10]; 20] = [[' '; 10]; 20];
 
     for y in 0..state.board.blocks.len() {
         for x in 0..state.board.blocks[0].len() {
             if
-            x == (state.active_piece.position.x + state.active_piece.blocks()[0].x) as usize && y == (state.active_piece.position.y + state.active_piece.blocks()[0].y) as usize ||
+                x == (state.active_piece.position.x + state.active_piece.blocks()[0].x) as usize && y == (state.active_piece.position.y + state.active_piece.blocks()[0].y) as usize ||
                 x == (state.active_piece.position.x + state.active_piece.blocks()[1].x) as usize && y == (state.active_piece.position.y + state.active_piece.blocks()[1].y) as usize ||
                 x == (state.active_piece.position.x + state.active_piece.blocks()[2].x) as usize && y == (state.active_piece.position.y + state.active_piece.blocks()[2].y) as usize ||
                 x == (state.active_piece.position.x + state.active_piece.blocks()[3].x) as usize && y == (state.active_piece.position.y + state.active_piece.blocks()[3].y) as usize
             {
-                simple_board[y][x] = state.active_piece.pattern;
+                simple_board[y][x] = char_for_block_type(&state.active_piece.block_type);
             } else if
-            x == (state.ghost_piece.position.x + state.ghost_piece.blocks()[0].x) as usize && y == (state.ghost_piece.position.y + state.ghost_piece.blocks()[0].y) as usize ||
+                x == (state.ghost_piece.position.x + state.ghost_piece.blocks()[0].x) as usize && y == (state.ghost_piece.position.y + state.ghost_piece.blocks()[0].y) as usize ||
                 x == (state.ghost_piece.position.x + state.ghost_piece.blocks()[1].x) as usize && y == (state.ghost_piece.position.y + state.ghost_piece.blocks()[1].y) as usize ||
                 x == (state.ghost_piece.position.x + state.ghost_piece.blocks()[2].x) as usize && y == (state.ghost_piece.position.y + state.ghost_piece.blocks()[2].y) as usize ||
                 x == (state.ghost_piece.position.x + state.ghost_piece.blocks()[3].x) as usize && y == (state.ghost_piece.position.y + state.ghost_piece.blocks()[3].y) as usize
             {
-                simple_board[y][x] = state.ghost_piece.pattern;
+                simple_board[y][x] = char_for_block_type(&state.ghost_piece.block_type);
             } else
             {
-                simple_board[y][x] = state.board.blocks[y][x].pattern;
+                simple_board[y][x] = char_for_block_type(&state.board.blocks[y][x].block_type);
             }
         }
     }
@@ -59,4 +59,18 @@ pub fn print_board(state: &GameState) {
             crossterm::cursor::MoveToColumn(0),
         ).unwrap();
     }
+}
+
+fn char_for_block_type(block_type: &BlockType) -> char {
+   match block_type {
+       BlockType::O =>     '🟨',
+       BlockType::I =>     '🟪',
+       BlockType::L =>     '🟧',
+       BlockType::J =>     '🟦',
+       BlockType::S =>     '🟩',
+       BlockType::Z =>     '🟥',
+       BlockType::T =>     '🟫',
+       BlockType::Ghost => '🤍',
+       BlockType::Empty => '🖤',
+   }
 }
