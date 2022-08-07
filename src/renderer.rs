@@ -3,18 +3,16 @@ use std::io::Write;
 use crate::GameState;
 
 use crossterm::execute;
-// use crossterm::terminal::{Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen};
+use crossterm::terminal::{Clear, ClearType};
 use crossterm::cursor::{MoveToColumn, MoveToRow};
 
 pub fn setup() {
-    // execute!(stdout(), EnterAlternateScreen).unwrap();
     crossterm::terminal::enable_raw_mode().unwrap();
 }
 
 pub fn teardown() {
     crossterm::terminal::disable_raw_mode().unwrap();
     // TODO: Try and clean up after yourself. Currently we're leaving all sorts of junk in the terminal
-    // execute!(stdout(), LeaveAlternateScreen, Clear(ClearType::All)).unwrap();
 }
 
 pub fn print_board(state: &GameState) {

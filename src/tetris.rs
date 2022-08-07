@@ -1,4 +1,7 @@
+use std::iter::Cycle;
+use std::slice::Iter;
 use rand::Rng;
+use rand::seq::SliceRandom;
 use crate::tetris::MoveOutcome::{GameOver, NothingSpecial, SpawnedNewPiece};
 
 pub const BOARD_WIDTH:  usize = 10;
@@ -11,14 +14,21 @@ pub struct GameState {
 }
 
 pub struct Game {
+    sequence: Vec<char>,
     active_piece: Piece,
     board: Board,
 }
 
 impl Game {
     pub fn new() -> Game {
+        let mut sequence = Game::make_piece_sequence();
+
+        let iter = sequence.iter();
+        let iter_pointer = Box::from(iter);
+
         let mut game = Game {
             active_piece: Game::make_random_piece(),
+            sequence,
             board: Board {
                 blocks: [[Block { filled: false, pattern: '🖤' }; 10]; 20]
             }
@@ -34,6 +44,14 @@ impl Game {
         if is_invalid_state(&self.active_piece, &self.board) {
             self.active_piece.position.y += 1;
         }
+    }
+
+    fn make_piece_sequence() -> Vec<char> {
+        let mut sequence: Vec<char> = Vec::from(['o', 'i', 't', 'j', 'l', 's', 'z']);
+        let mut rng = rand::thread_rng();
+        sequence.shuffle(&mut rng);
+
+        return sequence;
     }
 
     fn make_random_piece() -> Piece {
