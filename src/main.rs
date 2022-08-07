@@ -72,6 +72,7 @@ fn main() -> Result<(), ()> {
             Command::Exit => return exit(),
             Command::NoOp => {}
         }
+        thread::sleep(Duration::from_millis(7));
     }
 }
 
