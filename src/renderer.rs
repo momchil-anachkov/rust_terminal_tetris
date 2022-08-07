@@ -24,7 +24,7 @@ pub fn print_board(state: &GameState) {
         Clear(ClearType::FromCursorDown),
     ).unwrap();
 
-    let mut simple_board: [[char; 10]; 20] = [[' '; 10]; 20];
+    let mut char_board: [[char; 10]; 20] = [[' '; 10]; 20];
 
     for y in 0..state.board.blocks.len() {
         for x in 0..state.board.blocks[0].len() {
@@ -34,21 +34,21 @@ pub fn print_board(state: &GameState) {
                 x == (state.active_piece.position.x + state.active_piece.blocks()[2].x) as usize && y == (state.active_piece.position.y + state.active_piece.blocks()[2].y) as usize ||
                 x == (state.active_piece.position.x + state.active_piece.blocks()[3].x) as usize && y == (state.active_piece.position.y + state.active_piece.blocks()[3].y) as usize
             {
-                simple_board[y][x] = char_for_block_type(&state.active_piece.block_type);
+                char_board[y][x] = char_for_block_type(&state.active_piece.block_type);
             } else if
                 x == (state.ghost_piece.position.x + state.ghost_piece.blocks()[0].x) as usize && y == (state.ghost_piece.position.y + state.ghost_piece.blocks()[0].y) as usize ||
                 x == (state.ghost_piece.position.x + state.ghost_piece.blocks()[1].x) as usize && y == (state.ghost_piece.position.y + state.ghost_piece.blocks()[1].y) as usize ||
                 x == (state.ghost_piece.position.x + state.ghost_piece.blocks()[2].x) as usize && y == (state.ghost_piece.position.y + state.ghost_piece.blocks()[2].y) as usize ||
                 x == (state.ghost_piece.position.x + state.ghost_piece.blocks()[3].x) as usize && y == (state.ghost_piece.position.y + state.ghost_piece.blocks()[3].y) as usize
             {
-                simple_board[y][x] = char_for_block_type(&state.ghost_piece.block_type);
+                char_board[y][x] = char_for_block_type(&state.ghost_piece.block_type);
             } else
             {
-                simple_board[y][x] = char_for_block_type(&state.board.blocks[y][x].block_type);
+                char_board[y][x] = char_for_block_type(&state.board.blocks[y][x].block_type);
             }
         }
     }
-    for line in simple_board {
+    for line in char_board {
         for c in line {
             write!(stdout(), "{}", c).unwrap();
         }
@@ -59,6 +59,39 @@ pub fn print_board(state: &GameState) {
             crossterm::cursor::MoveToColumn(0),
         ).unwrap();
     }
+
+    crossterm::execute!(
+        stdout(),
+        crossterm::cursor::MoveToRow(0),
+        crossterm::cursor::MoveToColumn(25),
+    ).unwrap();
+
+    for line in state.next_pieces_board.blocks {
+        for block in line {
+            write!(stdout(), "{}", char_for_block_type(&block.block_type)).unwrap();
+        }
+
+        crossterm::execute!(
+            stdout(),
+            crossterm::cursor::MoveDown(1),
+            crossterm::cursor::MoveToColumn(25),
+        ).unwrap();
+    }
+
+    // crossterm::execute!(
+    //     stdout(),
+    //     crossterm::cursor::MoveToRow(0),
+    //     crossterm::cursor::MoveToColumn(25),
+    // ).unwrap();
+    //
+    // for piece in state.next_pieces {
+    //     write!(stdout(), "{:?}", piece).unwrap();
+    //     crossterm::execute!(
+    //         stdout(),
+    //         crossterm::cursor::MoveDown(1),
+    //         crossterm::cursor::MoveToColumn(25),
+    //     ).unwrap();
+    // }
 }
 
 fn char_for_block_type(block_type: &BlockType) -> char {

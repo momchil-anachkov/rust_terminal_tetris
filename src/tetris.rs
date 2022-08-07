@@ -5,6 +5,8 @@ pub const BOARD_WIDTH:  usize = 10;
 pub const BOARD_HEIGHT: usize = 20;
 
 #[derive(Clone)]
+#[derive(Copy)]
+#[derive(Debug)]
 pub enum PieceType {
     O,
     I,
@@ -33,6 +35,7 @@ pub struct GameState {
     pub active_piece: Piece,
     pub ghost_piece: Piece,
     pub board: Board,
+    pub next_pieces_board: NextPiecesBoard,
 }
 
 pub struct Game {
@@ -50,7 +53,7 @@ impl Game {
 
         let sequence_index: usize = 0;
         let sequence = Game::make_piece_sequence();
-        let active_piece = Game::make_piece(&PieceType::I);
+        let active_piece = Piece::from_piece_type(&PieceType::I);
 
         let mut game = Game {
             sequence_index,
@@ -79,7 +82,7 @@ impl Game {
 
     fn spawn_next_piece(self: &mut Game) {
         let a = Game::get_piece_from_sequence(&self.sequence, self.sequence_index);
-        self.active_piece = Game::make_piece(&a);
+        self.active_piece = Piece::from_piece_type(&a);
         Game::move_piece_to_spawn_point(&mut self.active_piece, &self.board);
         self.sequence_index += 1;
     }
@@ -104,18 +107,6 @@ impl Game {
         }
 
         return sequence;
-    }
-
-    fn make_piece(piece_type: &PieceType) -> Piece {
-        match piece_type {
-            PieceType::O => Piece::make_o(),
-            PieceType::I => Piece::make_i(),
-            PieceType::L => Piece::make_l(),
-            PieceType::J => Piece::make_j(),
-            PieceType::S => Piece::make_s(),
-            PieceType::Z => Piece::make_z(),
-            PieceType::T => Piece::make_t(),
-        }
     }
 
     pub fn rotate_clockwise(self: &mut Game) {
@@ -326,11 +317,44 @@ impl Game {
 
     pub fn current_state(self: &mut Game) -> GameState {
         let ghost_piece: Piece = calculate_and_create_ghost_piece(&self.active_piece, &self.board);
+        let mut it = self.sequence.iter().cycle();
+
+        let next_pieces_types: [&PieceType; 4] = [
+            it.nth(self.sequence_index).unwrap(),
+            it.next().unwrap(),
+            it.next().unwrap(),
+            it.next().unwrap(),
+        ];
+
+        let mut next_pieces = next_pieces_types.map(|piece_type| {
+            return Piece::from_piece_type(piece_type);
+        });
+
+        next_pieces[0].position.x = 2;
+        next_pieces[0].position.y = 2;
+        next_pieces[1].position.x = 2;
+        next_pieces[1].position.y = 6;
+        next_pieces[2].position.x = 2;
+        next_pieces[2].position.y = 10;
+        next_pieces[3].position.x = 2;
+        next_pieces[3].position.y = 14;
+
+        let mut next_pieces_board = NextPiecesBoard {
+            blocks: [ [Block{ filled: false, block_type: BlockType::Empty }; 6] ; 16]
+        };
+
+        for next_piece in next_pieces {
+            next_pieces_board.blocks[(next_piece.position.y + next_piece.blocks()[0].y) as usize][(next_piece.position.x + next_piece.blocks()[0].x) as usize].block_type = next_piece.block_type;
+            next_pieces_board.blocks[(next_piece.position.y + next_piece.blocks()[1].y) as usize][(next_piece.position.x + next_piece.blocks()[1].x) as usize].block_type = next_piece.block_type;
+            next_pieces_board.blocks[(next_piece.position.y + next_piece.blocks()[2].y) as usize][(next_piece.position.x + next_piece.blocks()[2].x) as usize].block_type = next_piece.block_type;
+            next_pieces_board.blocks[(next_piece.position.y + next_piece.blocks()[3].y) as usize][(next_piece.position.x + next_piece.blocks()[3].x) as usize].block_type = next_piece.block_type;
+        }
 
         return GameState {
             board: self.board,
             active_piece: self.active_piece,
             ghost_piece,
+            next_pieces_board,
         }
     }
 }
@@ -355,6 +379,10 @@ pub struct Piece {
 #[derive(Clone)]
 pub struct Board {
     pub blocks: [[Block; BOARD_WIDTH as usize]; BOARD_HEIGHT as usize],
+}
+
+pub struct NextPiecesBoard {
+    pub blocks: [[Block; 6]; 16],
 }
 
 #[derive(Copy)]
@@ -383,6 +411,18 @@ impl Piece {
             self.current_rotation = 3;
         } else {
             self.current_rotation -= 1;
+        }
+    }
+
+    fn from_piece_type(piece_type: &PieceType) -> Piece {
+        return match piece_type {
+            PieceType::O => Piece::make_o(),
+            PieceType::I => Piece::make_i(),
+            PieceType::L => Piece::make_l(),
+            PieceType::J => Piece::make_j(),
+            PieceType::S => Piece::make_s(),
+            PieceType::Z => Piece::make_z(),
+            PieceType::T => Piece::make_t(),
         }
     }
 

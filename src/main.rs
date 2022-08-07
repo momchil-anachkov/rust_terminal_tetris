@@ -2,7 +2,8 @@ mod tetris;
 mod renderer;
 mod input_system;
 
-use std::{time};
+use std::{thread, time};
+use std::time::Duration;
 use device_query::{DeviceQuery, DeviceState, Keycode};
 use crate::input_system::{Command, GameMove, InputSystem};
 use crate::tetris::{Game, GameState};
