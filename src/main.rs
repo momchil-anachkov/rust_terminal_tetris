@@ -33,7 +33,6 @@ fn main() -> Result<(), ()> {
         let keys: Vec<Keycode> = device_state.get_keys();
 
         // TODO game:
-        // Make a spawning sequence https://tetris.fandom.com/wiki/Random_Generator
         // Show the next 4 pieces
         // Hold piece
         // Line clear animation
