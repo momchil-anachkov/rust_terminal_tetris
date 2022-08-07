@@ -39,10 +39,6 @@ fn main() -> Result<(), ()> {
         // Line clear animation
 
         // TODO code:
-        // Make a renderer that takes the game state, and renders it to the terminal
-        //   instead of having the game print itself and know about stdout
-        //   that seems like a poor idea long-term
-        //
         // Add tests for the game rules (moving, rotations, slamming etc.)
         // Add tests for the input systems (key priority, edge-cases like left&right at the same time, etc.)
 
