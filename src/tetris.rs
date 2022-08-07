@@ -1,12 +1,14 @@
-use crossterm::execute;
-use crossterm::terminal::{Clear, ClearType};
-use crossterm::cursor::{MoveToColumn, MoveToRow};
 use rand::Rng;
-use std::io::{stdout, Write};
 use crate::tetris::MoveOutcome::{GameOver, NothingSpecial, SpawnedNewPiece};
 
 pub const BOARD_WIDTH:  usize = 10;
 pub const BOARD_HEIGHT: usize = 20;
+
+pub struct GameState {
+    pub active_piece: Piece,
+    pub ghost_piece: Piece,
+    pub board: Board,
+}
 
 pub struct Game {
     active_piece: Piece,
@@ -255,51 +257,13 @@ impl Game {
         }
     }
 
-    pub fn print_board(self: &mut Game) {
-        execute!(
-            stdout(),
-            MoveToColumn(0),
-            MoveToRow(0),
-            Clear(ClearType::FromCursorDown),
-        ).unwrap();
+    pub fn current_state(self: &mut Game) -> GameState {
+        let ghost_piece: Piece = calculate_and_create_ghost_piece(&self.active_piece, &self.board);
 
-        let ghost_piece = calculate_and_create_ghost_piece(&self.active_piece, &self.board);
-
-        let mut simple_board: [[char; 10]; 20] = [[' '; 10]; 20];
-
-        for y in 0..self.board.blocks.len() {
-            for x in 0..self.board.blocks[0].len() {
-                if
-                    x == (self.active_piece.position.x + self.active_piece.blocks()[0].x) as usize && y == (self.active_piece.position.y + self.active_piece.blocks()[0].y) as usize ||
-                    x == (self.active_piece.position.x + self.active_piece.blocks()[1].x) as usize && y == (self.active_piece.position.y + self.active_piece.blocks()[1].y) as usize ||
-                    x == (self.active_piece.position.x + self.active_piece.blocks()[2].x) as usize && y == (self.active_piece.position.y + self.active_piece.blocks()[2].y) as usize ||
-                    x == (self.active_piece.position.x + self.active_piece.blocks()[3].x) as usize && y == (self.active_piece.position.y + self.active_piece.blocks()[3].y) as usize
-                {
-                    simple_board[y][x] = self.active_piece.pattern;
-                } else if
-                    x == (ghost_piece.position.x + ghost_piece.blocks()[0].x) as usize && y == (ghost_piece.position.y + ghost_piece.blocks()[0].y) as usize ||
-                    x == (ghost_piece.position.x + ghost_piece.blocks()[1].x) as usize && y == (ghost_piece.position.y + ghost_piece.blocks()[1].y) as usize ||
-                    x == (ghost_piece.position.x + ghost_piece.blocks()[2].x) as usize && y == (ghost_piece.position.y + ghost_piece.blocks()[2].y) as usize ||
-                    x == (ghost_piece.position.x + ghost_piece.blocks()[3].x) as usize && y == (ghost_piece.position.y + ghost_piece.blocks()[3].y) as usize
-                {
-                    simple_board[y][x] = ghost_piece.pattern;
-                } else
-                {
-                    simple_board[y][x] = self.board.blocks[y][x].pattern;
-                }
-            }
-        }
-        for line in simple_board {
-            for c in line {
-                // print!("{}", c);
-                write!(stdout(), "{}", c).unwrap();
-            }
-
-            crossterm::execute!(
-                stdout(),
-                crossterm::cursor::MoveDown(1),
-                crossterm::cursor::MoveToColumn(0),
-            ).unwrap();
+        return GameState {
+            board: self.board,
+            active_piece: self.active_piece,
+            ghost_piece,
         }
     }
 }
@@ -307,19 +271,21 @@ impl Game {
 #[derive(Copy)]
 #[derive(Clone)]
 pub struct Vector2 {
-    x: i8,
-    y: i8,
+    pub x: i8,
+    pub y: i8,
 }
 
 #[derive(Copy)]
 #[derive(Clone)]
 pub struct Piece {
-    position: Vector2,
+    pub position: Vector2,
+    pub pattern: char,
     current_rotation: usize,
     rotations: [[Vector2; 4]; 4],
-    pattern: char,
 }
 
+#[derive(Copy)]
+#[derive(Clone)]
 pub struct Board {
     pub blocks: [[Block; BOARD_WIDTH as usize]; BOARD_HEIGHT as usize],
 }
@@ -333,7 +299,7 @@ pub struct Block {
 
 /// Piece rotations are in clockwise order
 impl Piece {
-    fn blocks(self: &Piece) -> &[Vector2; 4] {
+    pub fn blocks(self: &Piece) -> &[Vector2; 4] {
         return &self.rotations[self.current_rotation];
     }
 

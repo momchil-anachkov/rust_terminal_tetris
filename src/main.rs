@@ -1,8 +1,9 @@
 mod tetris;
+mod renderer;
 
 use std::{time};
 use device_query::{DeviceQuery, DeviceState, Keycode};
-use crate::tetris::{Game, MoveOutcome};
+use crate::tetris::{Game, GameState};
 use crate::tetris::MoveOutcome::{GameOver, SpawnedNewPiece};
 
 const TICK_INTERVAL_TIME: u128 = 1000000;
@@ -17,9 +18,9 @@ fn main() -> Result<(), ()> {
 
     let mut game: Game = Game::new();
 
-    crossterm::terminal::enable_raw_mode().unwrap();
+    renderer::setup();
 
-    game.print_board();
+    renderer::print_board(&game.current_state());
 
     let start = time::Instant::now();
     loop {
@@ -45,10 +46,6 @@ fn main() -> Result<(), ()> {
 
         let command = input_system.process_input(keys, delta_time);
 
-        if command == Command::Exit {
-            return Ok(());
-        }
-
         match command {
             Command::MakeGameMove(game_move) => {
                 match game_move {
@@ -60,24 +57,29 @@ fn main() -> Result<(), ()> {
                     GameMove::Tick => {
                         match game.move_down_and_stick() {
                             SpawnedNewPiece => input_system.reset_tick_timer(),
-                            GameOver => return Ok(()),
+                            GameOver => return exit(),
                             _ => {}
                         }
                     },
                     GameMove::Slam => {
                         match game.slam() {
                             SpawnedNewPiece => input_system.reset_tick_timer(),
-                            GameOver => return Ok(()),
+                            GameOver => return exit(),
                             _ => {}
                         }
                     },
                 }
-                game.print_board();
+                renderer::print_board(&game.current_state());
             }
+            Command::Exit => return exit(),
             Command::NoOp => {}
-            Command::Exit => {}
         }
     }
+}
+
+fn exit() -> Result<(), ()> {
+    renderer::teardown();
+    return Ok(());
 }
 
 #[derive(PartialEq)]
