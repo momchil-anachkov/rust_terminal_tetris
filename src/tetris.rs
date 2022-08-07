@@ -1,11 +1,19 @@
-use std::iter::Cycle;
-use std::slice::Iter;
-use rand::Rng;
 use rand::seq::SliceRandom;
 use crate::tetris::MoveOutcome::{GameOver, NothingSpecial, SpawnedNewPiece};
 
 pub const BOARD_WIDTH:  usize = 10;
 pub const BOARD_HEIGHT: usize = 20;
+
+#[derive(Clone)]
+pub enum PieceType {
+    O,
+    I,
+    L,
+    J,
+    S,
+    Z,
+    T
+}
 
 pub struct GameState {
     pub active_piece: Piece,
@@ -14,58 +22,85 @@ pub struct GameState {
 }
 
 pub struct Game {
-    sequence: Vec<char>,
+    sequence_index: usize,
+    sequence: Vec<PieceType>,
     active_piece: Piece,
     board: Board,
 }
 
 impl Game {
     pub fn new() -> Game {
-        let mut sequence = Game::make_piece_sequence();
+        let board = Board {
+            blocks: [[Block { filled: false, pattern: '🖤' }; 10]; 20]
+        };
 
-        let iter = sequence.iter();
-        let iter_pointer = Box::from(iter);
+        let sequence_index: usize = 0;
+        let sequence = Game::make_piece_sequence();
+        let active_piece = Game::make_piece(&PieceType::I);
 
         let mut game = Game {
-            active_piece: Game::make_random_piece(),
+            sequence_index,
             sequence,
-            board: Board {
-                blocks: [[Block { filled: false, pattern: '🖤' }; 10]; 20]
-            }
+            active_piece,
+            board,
         };
+
         game.spawn_next_piece();
+
         return game;
     }
 
-    fn spawn_next_piece(self: &mut Game) {
-        self.active_piece = Game::make_random_piece();
-        self.active_piece.position.y = 0;
-        self.active_piece.position.x = 4;
-        if is_invalid_state(&self.active_piece, &self.board) {
-            self.active_piece.position.y += 1;
+    fn get_piece_from_sequence(sequence: &Vec<PieceType>, index: usize) -> &PieceType {
+        return sequence.iter().cycle().nth(index).unwrap();
+    }
+
+    fn move_piece_to_spawn_point(piece: &mut Piece, board: &Board) {
+        let width = board.blocks[0].len();
+        piece.position.x = (width / 2) as i8;
+        piece.position.y = 0;
+        if is_invalid_state(piece, board) {
+            piece.position.y += 1;
         }
     }
 
-    fn make_piece_sequence() -> Vec<char> {
-        let mut sequence: Vec<char> = Vec::from(['o', 'i', 't', 'j', 'l', 's', 'z']);
+    fn spawn_next_piece(self: &mut Game) {
+        let a = Game::get_piece_from_sequence(&self.sequence, self.sequence_index);
+        self.active_piece = Game::make_piece(&a);
+        Game::move_piece_to_spawn_point(&mut self.active_piece, &self.board);
+        self.sequence_index += 1;
+    }
+
+    fn make_piece_sequence() -> Vec<PieceType> {
         let mut rng = rand::thread_rng();
-        sequence.shuffle(&mut rng);
+
+        let mut sequence: Vec<PieceType> = Vec::new();
+
+        for _ in 0..50 {
+            let mut bag = [
+                PieceType::O,
+                PieceType::I,
+                PieceType::L,
+                PieceType::J,
+                PieceType::S,
+                PieceType::Z,
+                PieceType::T,
+            ];
+            bag.shuffle(&mut rng);
+            sequence.extend_from_slice(&bag);
+        }
 
         return sequence;
     }
 
-    fn make_random_piece() -> Piece {
-        let mut rng = rand::thread_rng();
-        let number: u8 = rng.gen_range(0..=6);
-        match number {
-            0 => Piece::make_square(),
-            1 => Piece::make_i(),
-            2 => Piece::make_j(),
-            3 => Piece::make_l(),
-            4 => Piece::make_s(),
-            5 => Piece::make_t(),
-            6 => Piece::make_z(),
-            _ => Piece::make_square(),
+    fn make_piece(piece_type: &PieceType) -> Piece {
+        match piece_type {
+            PieceType::O => Piece::make_o(),
+            PieceType::I => Piece::make_i(),
+            PieceType::L => Piece::make_l(),
+            PieceType::J => Piece::make_j(),
+            PieceType::S => Piece::make_s(),
+            PieceType::Z => Piece::make_z(),
+            PieceType::T => Piece::make_t(),
         }
     }
 
@@ -337,7 +372,7 @@ impl Piece {
         }
     }
 
-    fn make_square() -> Piece {
+    fn make_o() -> Piece {
         return Piece {
             pattern: '🟨',
             position: Vector2 { x: 0, y: 0 },
