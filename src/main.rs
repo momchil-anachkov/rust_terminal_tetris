@@ -34,7 +34,6 @@ fn main() -> Result<(), ()> {
         let keys: Vec<Keycode> = device_state.get_keys();
 
         // TODO game:
-        // Show the next 4 pieces
         // Hold piece
         // Line clear animation
 
