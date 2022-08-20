@@ -40,7 +40,7 @@ pub struct GameState {
 
 pub struct Game {
     sequence_index: usize,
-    sequence: Vec<PieceType>,
+    sequence: [PieceType; 350],
     active_piece: Piece,
     board: Board,
 }
@@ -67,7 +67,7 @@ impl Game {
         return game;
     }
 
-    fn get_piece_from_sequence(sequence: &Vec<PieceType>, index: usize) -> &PieceType {
+    fn get_piece_from_sequence(sequence: &[PieceType; 350], index: usize) -> &PieceType {
         return &sequence[index % sequence.len()];
     }
 
@@ -87,12 +87,12 @@ impl Game {
         self.sequence_index += 1;
     }
 
-    fn make_piece_sequence() -> Vec<PieceType> {
+    fn make_piece_sequence() -> [PieceType; 350] {
         let mut rng = rand::thread_rng();
 
-        let mut sequence: Vec<PieceType> = Vec::new();
+        let mut sequence: [PieceType; 350] = [PieceType::I; 350];
 
-        for _ in 0..50 {
+        for bag_index in 0..50 {
             let mut bag = [
                 PieceType::O,
                 PieceType::I,
@@ -103,7 +103,10 @@ impl Game {
                 PieceType::T,
             ];
             bag.shuffle(&mut rng);
-            sequence.extend_from_slice(&bag);
+
+            for item_index in 0..7 {
+                sequence[bag_index * 7 + item_index] = bag[item_index];
+            }
         }
 
         return sequence;
