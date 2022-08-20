@@ -36,12 +36,14 @@ pub struct GameState {
     pub ghost_piece: Piece,
     pub board: Board,
     pub next_pieces_board: NextPiecesBoard,
+    pub held_piece_board: HeldPieceBoard,
 }
 
 pub struct Game {
     sequence_index: usize,
     sequence: [PieceType; 350],
     active_piece: Piece,
+    held_piece: PieceType,
     board: Board,
 }
 
@@ -59,6 +61,7 @@ impl Game {
             sequence_index,
             sequence,
             active_piece,
+            held_piece: PieceType::I,
             board,
         };
 
@@ -110,6 +113,27 @@ impl Game {
         }
 
         return sequence;
+    }
+
+    pub fn hold_piece(self: &mut Game) {
+        let new_active_piece = Piece::from_piece_type(&self.held_piece);
+
+        self.held_piece = match self.active_piece.block_type {
+            BlockType::O => PieceType::O,
+            BlockType::I => PieceType::I,
+            BlockType::L => PieceType::L,
+            BlockType::J => PieceType::J,
+            BlockType::S => PieceType::S,
+            BlockType::Z => PieceType::Z,
+            BlockType::T => PieceType::T,
+
+            // FIXME: It's hacky
+            BlockType::Ghost => PieceType::I,
+            BlockType::Empty => PieceType::I,
+        };
+
+        self.active_piece = new_active_piece;
+        Game::move_piece_to_spawn_point(&mut self.active_piece, &self.board);
     }
 
     pub fn rotate_clockwise(self: &mut Game) {
@@ -354,10 +378,24 @@ impl Game {
             next_pieces_board.blocks[(next_piece.position.y + next_piece.blocks()[3].y) as usize][(next_piece.position.x + next_piece.blocks()[3].x) as usize].block_type = next_piece.block_type;
         }
 
+        let mut held_piece_board = HeldPieceBoard {
+            blocks: [ [Block{ filled: false, block_type: BlockType::Empty }; 6] ; 5]
+        };
+
+        let mut held_piece = Piece::from_piece_type(&self.held_piece);
+        held_piece.position.x = 2;
+        held_piece.position.y = 2;
+
+        held_piece_board.blocks[(held_piece.position.y + held_piece.blocks()[0].y) as usize][(held_piece.position.x + held_piece.blocks()[0].x) as usize].block_type = held_piece.block_type;
+        held_piece_board.blocks[(held_piece.position.y + held_piece.blocks()[1].y) as usize][(held_piece.position.x + held_piece.blocks()[1].x) as usize].block_type = held_piece.block_type;
+        held_piece_board.blocks[(held_piece.position.y + held_piece.blocks()[2].y) as usize][(held_piece.position.x + held_piece.blocks()[2].x) as usize].block_type = held_piece.block_type;
+        held_piece_board.blocks[(held_piece.position.y + held_piece.blocks()[3].y) as usize][(held_piece.position.x + held_piece.blocks()[3].x) as usize].block_type = held_piece.block_type;
+
         return GameState {
             board: self.board,
             active_piece: self.active_piece,
             ghost_piece,
+            held_piece_board,
             next_pieces_board,
         }
     }
@@ -383,6 +421,10 @@ pub struct Piece {
 #[derive(Clone)]
 pub struct Board {
     pub blocks: [[Block; BOARD_WIDTH as usize]; BOARD_HEIGHT as usize],
+}
+
+pub struct HeldPieceBoard {
+    pub blocks: [[Block; 6]; 5],
 }
 
 pub struct NextPiecesBoard {

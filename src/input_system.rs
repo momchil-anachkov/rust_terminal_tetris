@@ -9,6 +9,7 @@ pub enum GameMove {
     RotateCounterClockwise,
     Tick,
     Slam,
+    Hold,
 }
 
 #[derive(PartialEq)]
@@ -117,6 +118,12 @@ impl InputSystem {
         if self.current_frame_keys.contains(&Keycode::Space) {
             if !self.last_frame_keys.contains(&Keycode::Space) {
                 return self.return_command(Command::MakeGameMove(GameMove::Slam));
+            }
+        }
+
+        if self.current_frame_keys.contains(&Keycode::LShift) {
+            if !self.last_frame_keys.contains(&Keycode::LShift) {
+                return self.return_command(Command::MakeGameMove(GameMove::Hold));
             }
         }
 

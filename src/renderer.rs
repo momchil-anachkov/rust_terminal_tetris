@@ -78,20 +78,23 @@ pub fn print_board(state: &GameState) {
         ).unwrap();
     }
 
-    // crossterm::execute!(
-    //     stdout(),
-    //     crossterm::cursor::MoveToRow(0),
-    //     crossterm::cursor::MoveToColumn(25),
-    // ).unwrap();
-    //
-    // for piece in state.next_pieces {
-    //     write!(stdout(), "{:?}", piece).unwrap();
-    //     crossterm::execute!(
-    //         stdout(),
-    //         crossterm::cursor::MoveDown(1),
-    //         crossterm::cursor::MoveToColumn(25),
-    //     ).unwrap();
-    // }
+    crossterm::execute!(
+        stdout(),
+        crossterm::cursor::MoveToRow(0),
+        crossterm::cursor::MoveToColumn(41),
+    ).unwrap();
+
+    for line in state.held_piece_board.blocks {
+        for block in line {
+            write!(stdout(), "{}", char_for_block_type(&block.block_type)).unwrap();
+        }
+
+        crossterm::execute!(
+            stdout(),
+            crossterm::cursor::MoveDown(1),
+            crossterm::cursor::MoveToColumn(41),
+        ).unwrap();
+    }
 }
 
 fn char_for_block_type(block_type: &BlockType) -> char {

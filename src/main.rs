@@ -51,6 +51,7 @@ fn main() -> Result<(), ()> {
                     GameMove::MoveDown => game.try_and_move_down(),
                     GameMove::RotateClockwise => game.rotate_clockwise(),
                     GameMove::RotateCounterClockwise => game.rotate_counterclockwise(),
+                    GameMove::Hold => game.hold_piece(),
                     GameMove::Tick => {
                         match game.move_down_and_stick() {
                             SpawnedNewPiece => input_system.reset_tick_timer(),
