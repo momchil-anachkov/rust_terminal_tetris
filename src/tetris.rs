@@ -68,7 +68,7 @@ impl Game {
     }
 
     fn get_piece_from_sequence(sequence: &Vec<PieceType>, index: usize) -> &PieceType {
-        return sequence.iter().cycle().nth(index).unwrap();
+        return &sequence[index % sequence.len()];
     }
 
     fn move_piece_to_spawn_point(piece: &mut Piece, board: &Board) {
@@ -317,13 +317,14 @@ impl Game {
 
     pub fn current_state(self: &mut Game) -> GameState {
         let ghost_piece: Piece = calculate_and_create_ghost_piece(&self.active_piece, &self.board);
-        let mut it = self.sequence.iter().cycle();
+
+        let normalized_index: usize = self.sequence_index % self.sequence.len();
 
         let next_pieces_types: [&PieceType; 4] = [
-            it.nth(self.sequence_index).unwrap(),
-            it.next().unwrap(),
-            it.next().unwrap(),
-            it.next().unwrap(),
+            &self.sequence[normalized_index + 0],
+            &self.sequence[normalized_index + 1],
+            &self.sequence[normalized_index + 2],
+            &self.sequence[normalized_index + 3],
         ];
 
         let mut next_pieces = next_pieces_types.map(|piece_type| {
