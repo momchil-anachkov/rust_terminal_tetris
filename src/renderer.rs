@@ -22,9 +22,39 @@ pub fn print_board(state: &GameState) {
 
     execute!(
         stdout(),
+        Clear(ClearType::All),
+        MoveToColumn(0),
+        MoveToRow(0),
+    ).unwrap();
+
+    execute!(
+        stdout(),
+        MoveToColumn(held_piece_board_start_column),
+        MoveToRow(0),
+    ).unwrap();
+
+    write!(stdout(), "Hold").unwrap();
+
+    execute!(
+        stdout(),
         MoveToColumn(game_board_start_column),
         MoveToRow(0),
-        Clear(ClearType::All),
+    ).unwrap();
+
+    write!(stdout(), "Game").unwrap();
+
+    execute!(
+        stdout(),
+        MoveToColumn(next_pieces_board_start_column),
+        MoveToRow(0),
+    ).unwrap();
+
+    write!(stdout(), "Next").unwrap();
+
+    execute!(
+        stdout(),
+        MoveToColumn(game_board_start_column),
+        MoveToRow(1),
     ).unwrap();
 
     let mut char_board: [[char; 10]; 20] = [[' '; 10]; 20];
@@ -65,7 +95,7 @@ pub fn print_board(state: &GameState) {
 
     crossterm::execute!(
         stdout(),
-        crossterm::cursor::MoveToRow(0),
+        crossterm::cursor::MoveToRow(1),
         crossterm::cursor::MoveToColumn(next_pieces_board_start_column),
     ).unwrap();
 
@@ -83,7 +113,7 @@ pub fn print_board(state: &GameState) {
 
     crossterm::execute!(
         stdout(),
-        crossterm::cursor::MoveToRow(0),
+        crossterm::cursor::MoveToRow(1),
         crossterm::cursor::MoveToColumn(held_piece_board_start_column),
     ).unwrap();
 
