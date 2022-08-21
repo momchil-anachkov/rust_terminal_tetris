@@ -13,15 +13,18 @@ pub fn setup() {
 
 pub fn teardown() {
     crossterm::terminal::disable_raw_mode().unwrap();
-    // TODO: Try and clean up after yourself. Currently we're leaving all sorts of junk in the terminal
 }
 
 pub fn print_board(state: &GameState) {
+    let game_board_start_column: u16 = 15;
+    let next_pieces_board_start_column: u16 = 38;
+    let held_piece_board_start_column: u16 = 0;
+
     execute!(
         stdout(),
-        MoveToColumn(0),
+        MoveToColumn(game_board_start_column),
         MoveToRow(0),
-        Clear(ClearType::FromCursorDown),
+        Clear(ClearType::All),
     ).unwrap();
 
     let mut char_board: [[char; 10]; 20] = [[' '; 10]; 20];
@@ -56,14 +59,14 @@ pub fn print_board(state: &GameState) {
         crossterm::execute!(
             stdout(),
             crossterm::cursor::MoveDown(1),
-            crossterm::cursor::MoveToColumn(0),
+            crossterm::cursor::MoveToColumn(game_board_start_column),
         ).unwrap();
     }
 
     crossterm::execute!(
         stdout(),
         crossterm::cursor::MoveToRow(0),
-        crossterm::cursor::MoveToColumn(25),
+        crossterm::cursor::MoveToColumn(next_pieces_board_start_column),
     ).unwrap();
 
     for line in state.next_pieces_board.blocks {
@@ -74,14 +77,14 @@ pub fn print_board(state: &GameState) {
         crossterm::execute!(
             stdout(),
             crossterm::cursor::MoveDown(1),
-            crossterm::cursor::MoveToColumn(25),
+            crossterm::cursor::MoveToColumn(next_pieces_board_start_column),
         ).unwrap();
     }
 
     crossterm::execute!(
         stdout(),
         crossterm::cursor::MoveToRow(0),
-        crossterm::cursor::MoveToColumn(41),
+        crossterm::cursor::MoveToColumn(held_piece_board_start_column),
     ).unwrap();
 
     for line in state.held_piece_board.blocks {
@@ -92,7 +95,7 @@ pub fn print_board(state: &GameState) {
         crossterm::execute!(
             stdout(),
             crossterm::cursor::MoveDown(1),
-            crossterm::cursor::MoveToColumn(41),
+            crossterm::cursor::MoveToColumn(held_piece_board_start_column),
         ).unwrap();
     }
 }
