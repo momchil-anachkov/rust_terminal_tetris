@@ -17,6 +17,22 @@ pub enum PieceType {
     T
 }
 
+impl PieceType {
+    fn from_block_type(block_type: &BlockType) -> PieceType {
+        match block_type {
+            BlockType::O => PieceType::O,
+            BlockType::I => PieceType::I,
+            BlockType::L => PieceType::L,
+            BlockType::J => PieceType::J,
+            BlockType::S => PieceType::S,
+            BlockType::Z => PieceType::Z,
+            BlockType::T => PieceType::T,
+
+            _ => {panic!("Tried to make a piece_type from an invalid block_type")}
+        }
+    }
+}
+
 #[derive(Copy)]
 #[derive(Clone)]
 pub enum BlockType {
@@ -43,7 +59,8 @@ pub struct Game {
     sequence_index: usize,
     sequence: [PieceType; 350],
     active_piece: Piece,
-    held_piece: PieceType,
+    // held_piece: PieceType,
+    held_piece: Option<PieceType>,
     board: Board,
 }
 
@@ -61,7 +78,7 @@ impl Game {
             sequence_index,
             sequence,
             active_piece,
-            held_piece: PieceType::I,
+            held_piece: None,
             board,
         };
 
@@ -116,24 +133,18 @@ impl Game {
     }
 
     pub fn hold_piece(self: &mut Game) {
-        let new_active_piece = Piece::from_piece_type(&self.held_piece);
-
-        self.held_piece = match self.active_piece.block_type {
-            BlockType::O => PieceType::O,
-            BlockType::I => PieceType::I,
-            BlockType::L => PieceType::L,
-            BlockType::J => PieceType::J,
-            BlockType::S => PieceType::S,
-            BlockType::Z => PieceType::Z,
-            BlockType::T => PieceType::T,
-
-            // FIXME: It's hacky
-            BlockType::Ghost => PieceType::I,
-            BlockType::Empty => PieceType::I,
-        };
-
-        self.active_piece = new_active_piece;
-        Game::move_piece_to_spawn_point(&mut self.active_piece, &self.board);
+        match self.held_piece {
+            None => {
+                self.held_piece = Some(PieceType::from_block_type(&self.active_piece.block_type));
+                self.spawn_next_piece();
+            }
+            Some(held_piece) => {
+                let new_active_piece = Piece::from_piece_type(&held_piece);
+                self.held_piece = Some(PieceType::from_block_type(&self.active_piece.block_type));
+                self.active_piece = new_active_piece;
+                Game::move_piece_to_spawn_point(&mut self.active_piece, &self.board);
+            }
+        }
     }
 
     pub fn rotate_clockwise(self: &mut Game) {
@@ -382,14 +393,19 @@ impl Game {
             blocks: [ [Block{ filled: false, block_type: BlockType::Empty }; 6] ; 5]
         };
 
-        let mut held_piece = Piece::from_piece_type(&self.held_piece);
-        held_piece.position.x = 2;
-        held_piece.position.y = 2;
+        match self.held_piece {
+            None => {}
+            Some(piece_type) => {
+                let mut held_piece = Piece::from_piece_type(&piece_type);
+                held_piece.position.x = 2;
+                held_piece.position.y = 2;
 
-        held_piece_board.blocks[(held_piece.position.y + held_piece.blocks()[0].y) as usize][(held_piece.position.x + held_piece.blocks()[0].x) as usize].block_type = held_piece.block_type;
-        held_piece_board.blocks[(held_piece.position.y + held_piece.blocks()[1].y) as usize][(held_piece.position.x + held_piece.blocks()[1].x) as usize].block_type = held_piece.block_type;
-        held_piece_board.blocks[(held_piece.position.y + held_piece.blocks()[2].y) as usize][(held_piece.position.x + held_piece.blocks()[2].x) as usize].block_type = held_piece.block_type;
-        held_piece_board.blocks[(held_piece.position.y + held_piece.blocks()[3].y) as usize][(held_piece.position.x + held_piece.blocks()[3].x) as usize].block_type = held_piece.block_type;
+                held_piece_board.blocks[(held_piece.position.y + held_piece.blocks()[0].y) as usize][(held_piece.position.x + held_piece.blocks()[0].x) as usize].block_type = held_piece.block_type;
+                held_piece_board.blocks[(held_piece.position.y + held_piece.blocks()[1].y) as usize][(held_piece.position.x + held_piece.blocks()[1].x) as usize].block_type = held_piece.block_type;
+                held_piece_board.blocks[(held_piece.position.y + held_piece.blocks()[2].y) as usize][(held_piece.position.x + held_piece.blocks()[2].x) as usize].block_type = held_piece.block_type;
+                held_piece_board.blocks[(held_piece.position.y + held_piece.blocks()[3].y) as usize][(held_piece.position.x + held_piece.blocks()[3].x) as usize].block_type = held_piece.block_type;
+            }
+        }
 
         return GameState {
             board: self.board,
