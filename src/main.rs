@@ -6,7 +6,7 @@ use std::{thread, time};
 use std::time::Duration;
 use device_query::{DeviceQuery, DeviceState, Keycode};
 use crate::input_system::{Command, GameMove, InputSystem};
-use crate::tetris::{Game, GameState};
+use crate::tetris::{Game, RenderState};
 use crate::tetris::MoveOutcome::{GameOver, SpawnedNewPiece};
 
 const TICK_INTERVAL_TIME: u128 = 1000000;
@@ -24,7 +24,7 @@ fn main() -> Result<(), ()> {
 
     renderer::setup();
 
-    renderer::print_board(&game.current_state());
+    renderer::print_board(&game.render_state());
 
     let start = time::Instant::now();
     loop {
@@ -60,7 +60,7 @@ fn main() -> Result<(), ()> {
                         }
                     },
                 }
-                renderer::print_board(&game.current_state());
+                renderer::print_board(&game.render_state());
             }
             Command::Exit => return exit(),
             Command::NoOp => {}

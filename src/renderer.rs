@@ -1,7 +1,7 @@
-use std::io::{Read, stdout};
+use std::io::{Read, stdout, Stdout};
 use std::io::stdin;
 use std::io::Write;
-use crate::GameState;
+use crate::RenderState;
 
 use crossterm::execute;
 use crossterm::terminal::{Clear, ClearType};
@@ -29,7 +29,7 @@ pub fn teardown() {
     println!("Thanks for playing!");
 }
 
-pub fn print_board(state: &GameState) {
+pub fn print_board(state: &RenderState) {
     let game_board_start_column: u16 = 15;
     let next_pieces_board_start_column: u16 = 38;
     let held_piece_board_start_column: u16 = 0;

@@ -48,7 +48,7 @@ pub enum BlockType {
     Empty,
 }
 
-pub struct GameState {
+pub struct RenderState {
     pub board: Board,
     pub next_pieces_board: NextPiecesBoard,
     pub held_piece_board: HeldPieceBoard,
@@ -364,7 +364,7 @@ impl Game {
         board.blocks[(piece.position.y + piece.blocks()[3].y) as usize][(piece.position.x + piece.blocks()[3].x) as usize].block_type = piece.block_type;
     }
 
-    pub fn current_state(self: &mut Game) -> GameState {
+    pub fn render_state(self: &mut Game) -> RenderState {
         let ghost_piece: Piece = calculate_and_create_ghost_piece(&self.active_piece, &self.board);
 
         let next_pieces_board = NextPiecesBoard::from_sequence(&self.sequence, &self.sequence_index);
@@ -375,7 +375,7 @@ impl Game {
         Game::stick_piece_to_board(&self.active_piece, &mut board);
         Game::stick_piece_to_board(&ghost_piece, &mut board);
 
-        return GameState {
+        return RenderState {
             board,
             held_piece_board,
             next_pieces_board,
