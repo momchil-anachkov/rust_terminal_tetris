@@ -1,4 +1,5 @@
-use std::io::stdout;
+use std::io::{Read, stdout};
+use std::io::stdin;
 use std::io::Write;
 use crate::GameState;
 
@@ -12,7 +13,20 @@ pub fn setup() {
 }
 
 pub fn teardown() {
+    crossterm::execute!(
+        stdout(),
+        MoveToRow(0),
+        MoveToColumn(0),
+        Clear(ClearType::All),
+    ).unwrap();
+
+    // Be a good neighbor and read the accumulated junk from stdin so you can finish on a clear terminal
+    let mut junk_input = Vec::new();
+    stdin().read(&mut junk_input).unwrap();
+
     crossterm::terminal::disable_raw_mode().unwrap();
+
+    println!("Thanks for playing!");
 }
 
 pub fn print_board(state: &GameState) {
