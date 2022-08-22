@@ -59,7 +59,6 @@ pub struct Game {
     sequence_index: usize,
     sequence: [PieceType; 350],
     active_piece: Piece,
-    // held_piece: PieceType,
     held_piece: Option<PieceType>,
     board: Board,
 }
