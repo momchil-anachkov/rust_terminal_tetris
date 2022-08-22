@@ -20,6 +20,7 @@ pub enum Command {
 }
 
 pub struct InputSystem {
+    is_running: bool,
     last_frame_keys: Vec<Keycode>,
     current_frame_keys: Vec<Keycode>,
     tick_interval_time: u128,
@@ -33,6 +34,7 @@ pub struct InputSystem {
 impl InputSystem {
     pub fn new(tick_interval_time: u128, key_repeat_interval: u128) -> InputSystem {
         return InputSystem {
+            is_running: false,
             tick_interval_time,
             key_repeat_interval,
             last_frame_keys: Vec::new(),
@@ -44,8 +46,31 @@ impl InputSystem {
         }
     }
 
+    pub fn stop(&mut self) {
+        self.is_running = false;
+    }
+
+    pub fn start(&mut self) {
+        self.is_running = true;
+    }
+
     pub fn process_input(&mut self, keys: Vec<Keycode>, delta_time: u128) -> Command {
         self.current_frame_keys = keys;
+
+        if self.current_frame_keys.contains(&Keycode::P) {
+            if !self.last_frame_keys.contains(&Keycode::P) {
+                if self.is_running {
+                    self.stop();
+                } else {
+                    self.start();
+                }
+            }
+        }
+
+        if !self.is_running {
+            return self.return_command(Command::NoOp);
+        }
+
         self.time_since_last_tick += delta_time;
 
         if self.time_since_last_tick > self.tick_interval_time {

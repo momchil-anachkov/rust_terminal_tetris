@@ -18,6 +18,7 @@ fn main() -> Result<(), ()> {
     let mut delta_time: u128;
     let device_state = DeviceState::new();
     let mut input_system = InputSystem::new(TICK_INTERVAL_TIME, KEY_REPEAT_INTERVAL);
+    input_system.start();
 
     let mut game: Game = Game::new();
 
