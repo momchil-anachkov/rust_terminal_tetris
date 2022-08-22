@@ -35,6 +35,7 @@ impl PieceType {
 
 #[derive(Copy)]
 #[derive(Clone)]
+#[derive(PartialEq)]
 pub enum BlockType {
     O,
     I,
@@ -66,7 +67,7 @@ pub struct Game {
 impl Game {
     pub fn new() -> Game {
         let board = Board {
-            blocks: [[Block { filled: false, block_type: BlockType::Empty }; 10]; 20]
+            blocks: [[Block { block_type: BlockType::Empty }; 10]; 20]
         };
 
         let sequence_index: usize = 0;
@@ -324,11 +325,6 @@ impl Game {
     }
 
     fn stick_current_piece(self: &mut Game) {
-        self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[0].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[0].x) as usize].filled = true;
-        self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[1].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[1].x) as usize].filled = true;
-        self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[2].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[2].x) as usize].filled = true;
-        self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[3].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[3].x) as usize].filled = true;
-
         self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[0].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[0].x) as usize].block_type = self.active_piece.block_type;
         self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[1].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[1].x) as usize].block_type = self.active_piece.block_type;
         self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[2].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[2].x) as usize].block_type = self.active_piece.block_type;
@@ -340,7 +336,7 @@ impl Game {
 
             let mut line_is_full = true;
             for block in line.iter() {
-                if !block.filled {
+                if block.block_type == BlockType::Empty {
                     line_is_full = false;
                 }
             }
@@ -349,14 +345,12 @@ impl Game {
                 // Move all the lines above one down.
                 for upper_line_index in (1..=line_index).rev() {
                     for column_index in 0..line.len() {
-                        self.board.blocks[upper_line_index][column_index].filled = self.board.blocks[upper_line_index-1][column_index].filled;
                         self.board.blocks[upper_line_index][column_index].block_type = self.board.blocks[upper_line_index-1][column_index].block_type;
                     }
                 }
 
                 // Clear the top line
                 for column_index in 0..line.len() {
-                    self.board.blocks[0][column_index].filled = false;
                     self.board.blocks[0][column_index].block_type = BlockType::Empty;
                 }
             }
@@ -389,7 +383,7 @@ impl Game {
         next_pieces[3].position.y = 14;
 
         let mut next_pieces_board = NextPiecesBoard {
-            blocks: [ [Block{ filled: false, block_type: BlockType::Empty }; 6] ; 16]
+            blocks: [ [Block{ block_type: BlockType::Empty }; 6] ; 16]
         };
 
         for next_piece in next_pieces {
@@ -400,7 +394,7 @@ impl Game {
         }
 
         let mut held_piece_board = HeldPieceBoard {
-            blocks: [ [Block{ filled: false, block_type: BlockType::Empty }; 6] ; 5]
+            blocks: [ [Block{ block_type: BlockType::Empty }; 6] ; 5]
         };
 
         match self.held_piece {
@@ -460,7 +454,6 @@ pub struct NextPiecesBoard {
 #[derive(Copy)]
 #[derive(Clone)]
 pub struct Block {
-    pub filled: bool,
     pub block_type: BlockType,
 }
 
@@ -789,10 +782,10 @@ fn piece_is_out_of_bounds (piece: &Piece, board: &Board) -> bool {
 
 fn collisions_exist(active_piece: &Piece, board: &Board) -> bool {
     if
-        board.blocks[(active_piece.position.y + active_piece.blocks()[0].y) as usize][(active_piece.position.x + active_piece.blocks()[0].x) as usize].filled ||
-        board.blocks[(active_piece.position.y + active_piece.blocks()[1].y) as usize][(active_piece.position.x + active_piece.blocks()[1].x) as usize].filled ||
-        board.blocks[(active_piece.position.y + active_piece.blocks()[2].y) as usize][(active_piece.position.x + active_piece.blocks()[2].x) as usize].filled ||
-        board.blocks[(active_piece.position.y + active_piece.blocks()[3].y) as usize][(active_piece.position.x + active_piece.blocks()[3].x) as usize].filled
+        board.blocks[(active_piece.position.y + active_piece.blocks()[0].y) as usize][(active_piece.position.x + active_piece.blocks()[0].x) as usize].block_type != BlockType::Empty ||
+        board.blocks[(active_piece.position.y + active_piece.blocks()[1].y) as usize][(active_piece.position.x + active_piece.blocks()[1].x) as usize].block_type != BlockType::Empty ||
+        board.blocks[(active_piece.position.y + active_piece.blocks()[2].y) as usize][(active_piece.position.x + active_piece.blocks()[2].x) as usize].block_type != BlockType::Empty ||
+        board.blocks[(active_piece.position.y + active_piece.blocks()[3].y) as usize][(active_piece.position.x + active_piece.blocks()[3].x) as usize].block_type != BlockType::Empty
     {
         return true;
     } else {
