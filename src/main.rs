@@ -51,29 +51,29 @@ fn main() -> Result<(), ()> {
                     GameMove::Tick => {
                         match game.move_down_and_stick() {
                             SpawnedNewPiece => input_system.reset_tick_timer(),
-                            GameOver => return exit(&mut renderer),
+                            GameOver => return exit(),
                             _ => {}
                         }
                     },
                     GameMove::Slam => {
                         match game.slam() {
                             SpawnedNewPiece => input_system.reset_tick_timer(),
-                            GameOver => return exit(&mut renderer),
+                            GameOver => return exit(),
                             _ => {}
                         }
                     },
                 }
                 renderer.print_board(&game.render_state());
             }
-            Command::Exit => return exit(&mut renderer),
+            Command::Exit => return exit(),
             Command::NoOp => {}
         }
         thread::sleep(Duration::from_millis(1));
     }
 }
 
-fn exit(renderer: &mut TerminalRenderer) -> Result<(), ()> {
-    renderer.teardown();
+fn exit() -> Result<(), ()> {
+    TerminalRenderer::teardown();
     return Ok(());
 }
 

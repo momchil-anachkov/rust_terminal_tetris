@@ -1,4 +1,4 @@
-use std::io::{Read, Stdin, stdout, Stdout};
+use std::io::{Read, stdout, Stdout};
 use std::io::stdin;
 use std::io::Write;
 use crate::RenderState;
@@ -9,14 +9,12 @@ use crossterm::cursor::{MoveToColumn, MoveToRow};
 use crate::tetris::BlockType;
 
 pub struct TerminalRenderer {
-    stdin : Stdin,
     stdout: Stdout,
 }
 
 impl TerminalRenderer {
     pub fn new() -> TerminalRenderer {
         return TerminalRenderer {
-            stdin : stdin(),
             stdout: stdout(),
         }
     }
@@ -25,9 +23,9 @@ impl TerminalRenderer {
         crossterm::terminal::enable_raw_mode().unwrap();
     }
 
-    pub fn teardown(&mut self) {
+    pub fn teardown() {
         crossterm::execute!(
-            self.stdout,
+            stdout(),
             MoveToRow(0),
             MoveToColumn(0),
             Clear(ClearType::All),
@@ -35,7 +33,7 @@ impl TerminalRenderer {
 
         // Be a good neighbor and read the accumulated junk from stdin so you can finish on a clear terminal
         let mut junk_input = Vec::new();
-        self.stdin.read(&mut junk_input).unwrap();
+        stdin().read(&mut junk_input).unwrap();
 
         crossterm::terminal::disable_raw_mode().unwrap();
 
