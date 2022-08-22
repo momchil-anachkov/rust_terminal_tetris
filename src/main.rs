@@ -33,15 +33,6 @@ fn main() -> Result<(), ()> {
 
         let keys: Vec<Keycode> = device_state.get_keys();
 
-        // TODO game:
-        // Hold piece
-        // Line clear animation
-
-        // TODO code:
-        // Add tests for the game rules (moving, rotations, slamming etc.)
-        // Add tests for the input systems (key priority, edge-cases like left&right at the same time, etc.)
-        // Try and clean up after yourself. Currently we're leaving all sorts of junk in the terminal
-
         let command = input_system.process_input(keys, delta_time);
 
         match command {

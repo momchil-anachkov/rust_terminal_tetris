@@ -283,6 +283,9 @@ impl Game {
         }
     }
 
+    // Just move down, and report if hit bottom
+    // Stick is a separate command
+
     pub fn move_down_and_stick(self: &mut Game) -> MoveOutcome {
         self.active_piece.position.y += 1;
 
@@ -332,10 +335,11 @@ impl Game {
         self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[2].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[2].x) as usize].block_type = self.active_piece.block_type;
         self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[3].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[3].x) as usize].block_type = self.active_piece.block_type;
 
+        // Scan all the lines down
         for line_index in 0..self.board.blocks.len() {
             let line = self.board.blocks[line_index];
-            let mut line_is_full = true;
 
+            let mut line_is_full = true;
             for block in line.iter() {
                 if !block.filled {
                     line_is_full = false;
@@ -343,11 +347,18 @@ impl Game {
             }
 
             if line_is_full {
+                // Move all the lines above one down.
                 for upper_line_index in (1..=line_index).rev() {
                     for column_index in 0..line.len() {
                         self.board.blocks[upper_line_index][column_index].filled = self.board.blocks[upper_line_index-1][column_index].filled;
                         self.board.blocks[upper_line_index][column_index].block_type = self.board.blocks[upper_line_index-1][column_index].block_type;
                     }
+                }
+
+                // Clear the top line
+                for column_index in 0..line.len() {
+                    self.board.blocks[0][column_index].filled = false;
+                    self.board.blocks[0][column_index].block_type = BlockType::Empty;
                 }
             }
         }
