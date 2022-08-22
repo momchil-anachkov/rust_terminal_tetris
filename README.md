@@ -15,7 +15,8 @@ Tetris in the terminal. Written in Rust.
 - ❌ 1 second wait before stick
 - ❌ GIFs for each of the game features
 - ❌ Line clear animation
-- ❌ Play/Pause
+- ✅ Play/Pause
+- ❌ Hide Game State on Pause
 - ❌ Score System
 - ❌ Menu
 
