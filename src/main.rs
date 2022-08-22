@@ -6,6 +6,7 @@ use std::{thread, time};
 use std::time::Duration;
 use device_query::{DeviceQuery, DeviceState, Keycode};
 use crate::input_system::{Command, GameMove, InputSystem};
+use crate::renderer::TerminalRenderer;
 use crate::tetris::{Game, RenderState};
 use crate::tetris::MoveOutcome::{GameOver, SpawnedNewPiece};
 
@@ -22,9 +23,11 @@ fn main() -> Result<(), ()> {
 
     let mut game: Game = Game::new();
 
-    renderer::setup();
+    let mut renderer = TerminalRenderer::new();
 
-    renderer::print_board(&game.render_state());
+    TerminalRenderer::setup();
+
+    renderer.print_board(&game.render_state());
 
     let start = time::Instant::now();
     loop {
@@ -48,29 +51,29 @@ fn main() -> Result<(), ()> {
                     GameMove::Tick => {
                         match game.move_down_and_stick() {
                             SpawnedNewPiece => input_system.reset_tick_timer(),
-                            GameOver => return exit(),
+                            GameOver => return exit(&mut renderer),
                             _ => {}
                         }
                     },
                     GameMove::Slam => {
                         match game.slam() {
                             SpawnedNewPiece => input_system.reset_tick_timer(),
-                            GameOver => return exit(),
+                            GameOver => return exit(&mut renderer),
                             _ => {}
                         }
                     },
                 }
-                renderer::print_board(&game.render_state());
+                renderer.print_board(&game.render_state());
             }
-            Command::Exit => return exit(),
+            Command::Exit => return exit(&mut renderer),
             Command::NoOp => {}
         }
         thread::sleep(Duration::from_millis(1));
     }
 }
 
-fn exit() -> Result<(), ()> {
-    renderer::teardown();
+fn exit(renderer: &mut TerminalRenderer) -> Result<(), ()> {
+    renderer.teardown();
     return Ok(());
 }
 
