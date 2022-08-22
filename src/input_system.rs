@@ -45,7 +45,7 @@ impl InputSystem {
     }
 
     pub fn process_input(&mut self, keys: Vec<Keycode>, delta_time: u128) -> Command {
-        self.current_frame_keys = keys.clone();
+        self.current_frame_keys = keys;
         self.time_since_last_tick += delta_time;
 
         if self.time_since_last_tick > self.tick_interval_time {
