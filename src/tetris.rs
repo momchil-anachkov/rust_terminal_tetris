@@ -325,7 +325,7 @@ impl Game {
     }
 
     fn stick_current_piece(self: &mut Game) {
-        Game::stick_piece_on_board(&self.active_piece, &mut self.board);
+        Game::stick_piece_to_board(&self.active_piece, &mut self.board);
         Game::clear_full_lines(&mut self.board);
     }
 
@@ -357,7 +357,7 @@ impl Game {
         }
     }
 
-    fn stick_piece_on_board(piece: &Piece, board: &mut Board) {
+    fn stick_piece_to_board(piece: &Piece, board: &mut Board) {
         board.blocks[(piece.position.y + piece.blocks()[0].y) as usize][(piece.position.x + piece.blocks()[0].x) as usize].block_type = piece.block_type;
         board.blocks[(piece.position.y + piece.blocks()[1].y) as usize][(piece.position.x + piece.blocks()[1].x) as usize].block_type = piece.block_type;
         board.blocks[(piece.position.y + piece.blocks()[2].y) as usize][(piece.position.x + piece.blocks()[2].x) as usize].block_type = piece.block_type;
@@ -367,13 +367,13 @@ impl Game {
     pub fn current_state(self: &mut Game) -> GameState {
         let ghost_piece: Piece = calculate_and_create_ghost_piece(&self.active_piece, &self.board);
 
-        let mut next_pieces_board = NextPiecesBoard::from_sequence(&self.sequence, &self.sequence_index);
-        let mut held_piece_board = HeldPieceBoard::from_piece_type(&self.held_piece);
+        let next_pieces_board = NextPiecesBoard::from_sequence(&self.sequence, &self.sequence_index);
+        let held_piece_board = HeldPieceBoard::from_piece_type(&self.held_piece);
 
         let mut board = self.board;
 
-        Game::stick_piece_on_board(&self.active_piece, &mut board);
-        Game::stick_piece_on_board(&ghost_piece,       &mut board);
+        Game::stick_piece_to_board(&self.active_piece, &mut board);
+        Game::stick_piece_to_board(&ghost_piece, &mut board);
 
         return GameState {
             board,
