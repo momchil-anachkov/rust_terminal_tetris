@@ -49,8 +49,6 @@ pub enum BlockType {
 }
 
 pub struct GameState {
-    pub active_piece: Piece,
-    pub ghost_piece: Piece,
     pub board: Board,
     pub next_pieces_board: NextPiecesBoard,
     pub held_piece_board: HeldPieceBoard,
@@ -58,11 +56,13 @@ pub struct GameState {
 
 pub struct Game {
     sequence_index: usize,
-    sequence: [PieceType; 350],
+    sequence: PieceSequence,
     active_piece: Piece,
     held_piece: Option<PieceType>,
     board: Board,
 }
+
+type PieceSequence = [PieceType; 350];
 
 impl Game {
     pub fn new() -> Game {
@@ -325,14 +325,14 @@ impl Game {
     }
 
     fn stick_current_piece(self: &mut Game) {
-        self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[0].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[0].x) as usize].block_type = self.active_piece.block_type;
-        self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[1].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[1].x) as usize].block_type = self.active_piece.block_type;
-        self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[2].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[2].x) as usize].block_type = self.active_piece.block_type;
-        self.board.blocks[(self.active_piece.position.y + self.active_piece.blocks()[3].y) as usize][(self.active_piece.position.x + self.active_piece.blocks()[3].x) as usize].block_type = self.active_piece.block_type;
+        Game::stick_piece_on_board(&self.active_piece, &mut self.board);
+        Game::clear_full_lines(&mut self.board);
+    }
 
+    fn clear_full_lines(board: &mut Board) {
         // Scan all the lines down
-        for line_index in 0..self.board.blocks.len() {
-            let line = self.board.blocks[line_index];
+        for line_index in 0..board.blocks.len() {
+            let line = board.blocks[line_index];
 
             let mut line_is_full = true;
             for block in line.iter() {
@@ -345,76 +345,38 @@ impl Game {
                 // Move all the lines above one down.
                 for upper_line_index in (1..=line_index).rev() {
                     for column_index in 0..line.len() {
-                        self.board.blocks[upper_line_index][column_index].block_type = self.board.blocks[upper_line_index-1][column_index].block_type;
+                        board.blocks[upper_line_index][column_index].block_type = board.blocks[upper_line_index - 1][column_index].block_type;
                     }
                 }
 
                 // Clear the top line
                 for column_index in 0..line.len() {
-                    self.board.blocks[0][column_index].block_type = BlockType::Empty;
+                    board.blocks[0][column_index].block_type = BlockType::Empty;
                 }
             }
         }
     }
 
+    fn stick_piece_on_board(piece: &Piece, board: &mut Board) {
+        board.blocks[(piece.position.y + piece.blocks()[0].y) as usize][(piece.position.x + piece.blocks()[0].x) as usize].block_type = piece.block_type;
+        board.blocks[(piece.position.y + piece.blocks()[1].y) as usize][(piece.position.x + piece.blocks()[1].x) as usize].block_type = piece.block_type;
+        board.blocks[(piece.position.y + piece.blocks()[2].y) as usize][(piece.position.x + piece.blocks()[2].x) as usize].block_type = piece.block_type;
+        board.blocks[(piece.position.y + piece.blocks()[3].y) as usize][(piece.position.x + piece.blocks()[3].x) as usize].block_type = piece.block_type;
+    }
+
     pub fn current_state(self: &mut Game) -> GameState {
         let ghost_piece: Piece = calculate_and_create_ghost_piece(&self.active_piece, &self.board);
 
-        let normalized_index: usize = self.sequence_index % self.sequence.len();
+        let mut next_pieces_board = NextPiecesBoard::from_sequence(&self.sequence, &self.sequence_index);
+        let mut held_piece_board = HeldPieceBoard::from_piece_type(&self.held_piece);
 
-        let next_pieces_types: [&PieceType; 4] = [
-            &self.sequence[normalized_index + 0],
-            &self.sequence[normalized_index + 1],
-            &self.sequence[normalized_index + 2],
-            &self.sequence[normalized_index + 3],
-        ];
+        let mut board = self.board;
 
-        let mut next_pieces = next_pieces_types.map(|piece_type| {
-            return Piece::from_piece_type(piece_type);
-        });
-
-        next_pieces[0].position.x = 2;
-        next_pieces[0].position.y = 2;
-        next_pieces[1].position.x = 2;
-        next_pieces[1].position.y = 6;
-        next_pieces[2].position.x = 2;
-        next_pieces[2].position.y = 10;
-        next_pieces[3].position.x = 2;
-        next_pieces[3].position.y = 14;
-
-        let mut next_pieces_board = NextPiecesBoard {
-            blocks: [ [Block{ block_type: BlockType::Empty }; 6] ; 16]
-        };
-
-        for next_piece in next_pieces {
-            next_pieces_board.blocks[(next_piece.position.y + next_piece.blocks()[0].y) as usize][(next_piece.position.x + next_piece.blocks()[0].x) as usize].block_type = next_piece.block_type;
-            next_pieces_board.blocks[(next_piece.position.y + next_piece.blocks()[1].y) as usize][(next_piece.position.x + next_piece.blocks()[1].x) as usize].block_type = next_piece.block_type;
-            next_pieces_board.blocks[(next_piece.position.y + next_piece.blocks()[2].y) as usize][(next_piece.position.x + next_piece.blocks()[2].x) as usize].block_type = next_piece.block_type;
-            next_pieces_board.blocks[(next_piece.position.y + next_piece.blocks()[3].y) as usize][(next_piece.position.x + next_piece.blocks()[3].x) as usize].block_type = next_piece.block_type;
-        }
-
-        let mut held_piece_board = HeldPieceBoard {
-            blocks: [ [Block{ block_type: BlockType::Empty }; 6] ; 5]
-        };
-
-        match self.held_piece {
-            None => {}
-            Some(piece_type) => {
-                let mut held_piece = Piece::from_piece_type(&piece_type);
-                held_piece.position.x = 2;
-                held_piece.position.y = 2;
-
-                held_piece_board.blocks[(held_piece.position.y + held_piece.blocks()[0].y) as usize][(held_piece.position.x + held_piece.blocks()[0].x) as usize].block_type = held_piece.block_type;
-                held_piece_board.blocks[(held_piece.position.y + held_piece.blocks()[1].y) as usize][(held_piece.position.x + held_piece.blocks()[1].x) as usize].block_type = held_piece.block_type;
-                held_piece_board.blocks[(held_piece.position.y + held_piece.blocks()[2].y) as usize][(held_piece.position.x + held_piece.blocks()[2].x) as usize].block_type = held_piece.block_type;
-                held_piece_board.blocks[(held_piece.position.y + held_piece.blocks()[3].y) as usize][(held_piece.position.x + held_piece.blocks()[3].x) as usize].block_type = held_piece.block_type;
-            }
-        }
+        Game::stick_piece_on_board(&self.active_piece, &mut board);
+        Game::stick_piece_on_board(&ghost_piece,       &mut board);
 
         return GameState {
-            board: self.board,
-            active_piece: self.active_piece,
-            ghost_piece,
+            board,
             held_piece_board,
             next_pieces_board,
         }
@@ -447,8 +409,71 @@ pub struct HeldPieceBoard {
     pub blocks: [[Block; 6]; 5],
 }
 
+impl HeldPieceBoard {
+    fn from_piece_type(maybe_piece_type: &Option<PieceType>) -> HeldPieceBoard {
+        let mut held_piece_board = HeldPieceBoard {
+            blocks: [ [Block{ block_type: BlockType::Empty }; 6] ; 5]
+        };
+
+        match maybe_piece_type {
+            None => {}
+            Some(piece_type) => {
+                let mut held_piece = Piece::from_piece_type(&piece_type);
+                held_piece.position.x = 2;
+                held_piece.position.y = 2;
+
+                held_piece_board.blocks[(held_piece.position.y + held_piece.blocks()[0].y) as usize][(held_piece.position.x + held_piece.blocks()[0].x) as usize].block_type = held_piece.block_type;
+                held_piece_board.blocks[(held_piece.position.y + held_piece.blocks()[1].y) as usize][(held_piece.position.x + held_piece.blocks()[1].x) as usize].block_type = held_piece.block_type;
+                held_piece_board.blocks[(held_piece.position.y + held_piece.blocks()[2].y) as usize][(held_piece.position.x + held_piece.blocks()[2].x) as usize].block_type = held_piece.block_type;
+                held_piece_board.blocks[(held_piece.position.y + held_piece.blocks()[3].y) as usize][(held_piece.position.x + held_piece.blocks()[3].x) as usize].block_type = held_piece.block_type;
+            }
+        }
+
+        return held_piece_board;
+    }
+}
+
 pub struct NextPiecesBoard {
     pub blocks: [[Block; 6]; 16],
+}
+
+impl NextPiecesBoard {
+    fn from_sequence(sequence: &PieceSequence, sequence_index: &usize) -> NextPiecesBoard {
+        let normalized_index: usize = sequence_index % sequence.len();
+
+        let next_pieces_types: [&PieceType; 4] = [
+            &sequence[normalized_index + 0],
+            &sequence[normalized_index + 1],
+            &sequence[normalized_index + 2],
+            &sequence[normalized_index + 3],
+        ];
+
+        let mut next_pieces = next_pieces_types.map(|piece_type| {
+            return Piece::from_piece_type(piece_type);
+        });
+
+        next_pieces[0].position.x = 2;
+        next_pieces[0].position.y = 2;
+        next_pieces[1].position.x = 2;
+        next_pieces[1].position.y = 6;
+        next_pieces[2].position.x = 2;
+        next_pieces[2].position.y = 10;
+        next_pieces[3].position.x = 2;
+        next_pieces[3].position.y = 14;
+
+        let mut next_pieces_board = NextPiecesBoard {
+            blocks: [ [Block{ block_type: BlockType::Empty }; 6] ; 16]
+        };
+
+        for next_piece in next_pieces {
+            next_pieces_board.blocks[(next_piece.position.y + next_piece.blocks()[0].y) as usize][(next_piece.position.x + next_piece.blocks()[0].x) as usize].block_type = next_piece.block_type;
+            next_pieces_board.blocks[(next_piece.position.y + next_piece.blocks()[1].y) as usize][(next_piece.position.x + next_piece.blocks()[1].x) as usize].block_type = next_piece.block_type;
+            next_pieces_board.blocks[(next_piece.position.y + next_piece.blocks()[2].y) as usize][(next_piece.position.x + next_piece.blocks()[2].x) as usize].block_type = next_piece.block_type;
+            next_pieces_board.blocks[(next_piece.position.y + next_piece.blocks()[3].y) as usize][(next_piece.position.x + next_piece.blocks()[3].x) as usize].block_type = next_piece.block_type;
+        }
+
+        return next_pieces_board;
+    }
 }
 
 #[derive(Copy)]

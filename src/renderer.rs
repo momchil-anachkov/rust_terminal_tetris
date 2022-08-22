@@ -71,33 +71,9 @@ pub fn print_board(state: &GameState) {
         MoveToRow(1),
     ).unwrap();
 
-    let mut char_board: [[char; 10]; 20] = [[' '; 10]; 20];
-
-    for y in 0..state.board.blocks.len() {
-        for x in 0..state.board.blocks[0].len() {
-            if
-                x == (state.active_piece.position.x + state.active_piece.blocks()[0].x) as usize && y == (state.active_piece.position.y + state.active_piece.blocks()[0].y) as usize ||
-                x == (state.active_piece.position.x + state.active_piece.blocks()[1].x) as usize && y == (state.active_piece.position.y + state.active_piece.blocks()[1].y) as usize ||
-                x == (state.active_piece.position.x + state.active_piece.blocks()[2].x) as usize && y == (state.active_piece.position.y + state.active_piece.blocks()[2].y) as usize ||
-                x == (state.active_piece.position.x + state.active_piece.blocks()[3].x) as usize && y == (state.active_piece.position.y + state.active_piece.blocks()[3].y) as usize
-            {
-                char_board[y][x] = char_for_block_type(&state.active_piece.block_type);
-            } else if
-                x == (state.ghost_piece.position.x + state.ghost_piece.blocks()[0].x) as usize && y == (state.ghost_piece.position.y + state.ghost_piece.blocks()[0].y) as usize ||
-                x == (state.ghost_piece.position.x + state.ghost_piece.blocks()[1].x) as usize && y == (state.ghost_piece.position.y + state.ghost_piece.blocks()[1].y) as usize ||
-                x == (state.ghost_piece.position.x + state.ghost_piece.blocks()[2].x) as usize && y == (state.ghost_piece.position.y + state.ghost_piece.blocks()[2].y) as usize ||
-                x == (state.ghost_piece.position.x + state.ghost_piece.blocks()[3].x) as usize && y == (state.ghost_piece.position.y + state.ghost_piece.blocks()[3].y) as usize
-            {
-                char_board[y][x] = char_for_block_type(&state.ghost_piece.block_type);
-            } else
-            {
-                char_board[y][x] = char_for_block_type(&state.board.blocks[y][x].block_type);
-            }
-        }
-    }
-    for line in char_board {
-        for c in line {
-            write!(stdout(), "{}", c).unwrap();
+    for line in state.board.blocks {
+        for block in line {
+            write!(stdout(), "{}", char_for_block_type(&block.block_type)).unwrap();
         }
 
         crossterm::execute!(
