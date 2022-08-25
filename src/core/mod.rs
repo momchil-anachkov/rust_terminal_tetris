@@ -56,30 +56,10 @@ impl Game<'_> {
     pub fn update(&mut self, delta_time: &u128) -> bool {
         let keys = self.input_system.get_keys(delta_time);
         return self.process_input(&keys);
-        // if keys.contains(&&Key::Escape) || keys.contains(&&Key::Control) && keys.contains(&&Key::C) {
-        //     return true;
-        // }
-        //
-        // for key in keys {
-        //     match (&self.playing_state, key) {
-        //         (_, Key::Left) => self.tetris.try_and_move_left(),
-        //         (_, Key::Right) => self.tetris.try_and_move_right(),
-        //         (_, Key::Down) => self.tetris.try_and_move_down(),
-        //         (_, Key::Up | Key::Z) => self.tetris.rotate_clockwise(),
-        //         (_, Key::X) => self.tetris.rotate_counterclockwise(),
-        //         (_, Key::Shift) => self.tetris.hold_piece(),
-        //         (_, Key::Space) => { self.tetris.slam(); },
-        //         (_, _) => (),
-        //     }
-        //
-        //     self.renderer.render(&self.tetris.state());
-        // }
-        //
-        // return false;
     }
 
-    fn process_input(&mut self, keys: &Vec<&Key>) -> bool {
-        if keys.contains(&&Key::Escape) || keys.contains(&&Key::Control) && keys.contains(&&Key::C) {
+    fn process_input(&mut self, keys: &Vec<Key>) -> bool {
+        if keys.contains(&Key::Escape) || keys.contains(&Key::Control) && keys.contains(&Key::C) {
             return true;
         }
 
