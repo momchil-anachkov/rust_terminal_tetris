@@ -1,4 +1,5 @@
-use device_query::Keycode;
+use device_query::{DeviceState, Keycode};
+use device_query::DeviceQuery;
 
 #[derive(PartialEq)]
 pub enum GameMove {
@@ -20,6 +21,7 @@ pub enum Command {
 }
 
 pub struct InputSystem {
+    device_state: DeviceState,
     is_running: bool,
     last_frame_keys: Vec<Keycode>,
     current_frame_keys: Vec<Keycode>,
@@ -33,7 +35,9 @@ pub struct InputSystem {
 
 impl InputSystem {
     pub fn new(tick_interval_time: u128, key_repeat_interval: u128) -> InputSystem {
+        let device_state = DeviceState::new();
         return InputSystem {
+            device_state,
             is_running: false,
             tick_interval_time,
             key_repeat_interval,
@@ -54,7 +58,8 @@ impl InputSystem {
         self.is_running = true;
     }
 
-    pub fn process_input(&mut self, keys: Vec<Keycode>, delta_time: u128) -> Command {
+    pub fn process_input(&mut self, delta_time: u128) -> Command {
+        let keys: Vec<Keycode> = self.device_state.get_keys();
         self.current_frame_keys = keys;
 
         if self.current_frame_keys.contains(&Keycode::P) {

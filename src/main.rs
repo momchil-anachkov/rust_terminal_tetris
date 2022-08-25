@@ -4,7 +4,6 @@ mod core;
 
 use std::{thread, time};
 use std::time::Duration;
-use device_query::{DeviceQuery, DeviceState, Keycode};
 use crate::input_system::{Command, GameMove, InputSystem};
 use crate::renderer::TerminalRenderer;
 use crate::core::tetris::Tetris;
@@ -17,7 +16,6 @@ fn main() -> Result<(), ()> {
     let mut last_frame_start_time: u128 = 0;
     let mut now: u128;
     let mut delta_time: u128;
-    let device_state = DeviceState::new();
     let mut input_system = InputSystem::new(TICK_INTERVAL_TIME, KEY_REPEAT_INTERVAL);
     input_system.start();
 
@@ -35,9 +33,7 @@ fn main() -> Result<(), ()> {
         delta_time = now - last_frame_start_time;
         last_frame_start_time = now;
 
-        let keys: Vec<Keycode> = device_state.get_keys();
-
-        let command = input_system.process_input(keys, delta_time);
+        let command = input_system.process_input(delta_time);
 
         match command {
             Command::MakeGameMove(game_move) => {
