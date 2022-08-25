@@ -1,8 +1,20 @@
 use rand::seq::SliceRandom;
-use crate::tetris::MoveOutcome::{GameOver, NothingSpecial, SpawnedNewPiece};
 
 pub const BOARD_WIDTH:  usize = 10;
 pub const BOARD_HEIGHT: usize = 20;
+
+pub struct TetrisState {
+    pub board: Board,
+    pub next_pieces_board: NextPiecesBoard,
+    pub held_piece_board: HeldPieceBoard,
+}
+
+#[derive(PartialEq)]
+pub enum MoveOutcome {
+    SpawnedNewPiece,
+    GameOver,
+    NothingSpecial,
+}
 
 #[derive(Clone)]
 #[derive(Copy)]
@@ -48,13 +60,7 @@ pub enum BlockType {
     Empty,
 }
 
-pub struct RenderState {
-    pub board: Board,
-    pub next_pieces_board: NextPiecesBoard,
-    pub held_piece_board: HeldPieceBoard,
-}
-
-pub struct Game {
+pub struct Tetris {
     sequence_index: usize,
     sequence: PieceSequence,
     active_piece: Piece,
@@ -64,17 +70,17 @@ pub struct Game {
 
 type PieceSequence = [PieceType; 350];
 
-impl Game {
-    pub fn new() -> Game {
+impl Tetris {
+    pub fn new() -> Tetris {
         let board = Board {
             blocks: [[Block { block_type: BlockType::Empty }; 10]; 20]
         };
 
         let sequence_index: usize = 0;
-        let sequence = Game::make_piece_sequence();
+        let sequence = Tetris::make_piece_sequence();
         let active_piece = Piece::from_piece_type(&PieceType::I);
 
-        let mut game = Game {
+        let mut game = Tetris {
             sequence_index,
             sequence,
             active_piece,
@@ -100,10 +106,10 @@ impl Game {
         }
     }
 
-    fn spawn_next_piece(self: &mut Game) {
-        let a = Game::get_piece_from_sequence(&self.sequence, self.sequence_index);
+    fn spawn_next_piece(self: &mut Tetris) {
+        let a = Tetris::get_piece_from_sequence(&self.sequence, self.sequence_index);
         self.active_piece = Piece::from_piece_type(&a);
-        Game::move_piece_to_spawn_point(&mut self.active_piece, &self.board);
+        Tetris::move_piece_to_spawn_point(&mut self.active_piece, &self.board);
         self.sequence_index += 1;
     }
 
@@ -132,7 +138,7 @@ impl Game {
         return sequence;
     }
 
-    pub fn hold_piece(self: &mut Game) {
+    pub fn hold_piece(self: &mut Tetris) {
         match self.held_piece {
             None => {
                 self.held_piece = Some(PieceType::from_block_type(&self.active_piece.block_type));
@@ -142,12 +148,12 @@ impl Game {
                 let new_active_piece = Piece::from_piece_type(&held_piece);
                 self.held_piece = Some(PieceType::from_block_type(&self.active_piece.block_type));
                 self.active_piece = new_active_piece;
-                Game::move_piece_to_spawn_point(&mut self.active_piece, &self.board);
+                Tetris::move_piece_to_spawn_point(&mut self.active_piece, &self.board);
             }
         }
     }
 
-    pub fn rotate_clockwise(self: &mut Game) {
+    pub fn rotate_clockwise(self: &mut Tetris) {
         self.active_piece.rotate_clockwise();
 
         if is_invalid_state(&self.active_piece, &self.board) {
@@ -179,7 +185,7 @@ impl Game {
         }
     }
 
-    pub fn rotate_counterclockwise(self: &mut Game) {
+    pub fn rotate_counterclockwise(self: &mut Tetris) {
         self.active_piece.rotate_counterclockwise();
 
         if is_invalid_state(&self.active_piece, &self.board) {
@@ -211,7 +217,7 @@ impl Game {
         }
     }
 
-    pub fn try_and_move_left(self: &mut Game) {
+    pub fn try_and_move_left(self: &mut Tetris) {
         self.active_piece.position.x -= 1;
 
         if is_invalid_state(&self.active_piece, &self.board) {
@@ -219,7 +225,7 @@ impl Game {
         }
     }
 
-    pub fn try_and_move_right(self: &mut Game) {
+    pub fn try_and_move_right(self: &mut Tetris) {
         self.active_piece.position.x += 1;
 
         if is_invalid_state(&self.active_piece, &self.board) {
@@ -227,7 +233,7 @@ impl Game {
         }
     }
 
-    pub fn try_and_move_down(self: &mut Game) {
+    pub fn try_and_move_down(self: &mut Tetris) {
         self.active_piece.position.y += 1;
 
         if is_invalid_state(&self.active_piece, &self.board) {
@@ -235,7 +241,7 @@ impl Game {
         }
     }
 
-    fn try_and_move_up(self: &mut Game) {
+    fn try_and_move_up(self: &mut Tetris) {
         self.active_piece.position.x += 1;
 
         if is_invalid_state(&self.active_piece, &self.board) {
@@ -243,7 +249,7 @@ impl Game {
         }
     }
 
-    fn try_and_move_up_left(self: &mut Game) {
+    fn try_and_move_up_left(self: &mut Tetris) {
         self.active_piece.position.y -= 1;
         self.active_piece.position.x -= 1;
 
@@ -253,7 +259,7 @@ impl Game {
         }
     }
 
-    fn try_and_move_up_right(self: &mut Game) {
+    fn try_and_move_up_right(self: &mut Tetris) {
         self.active_piece.position.y -= 1;
         self.active_piece.position.x += 1;
 
@@ -263,7 +269,7 @@ impl Game {
         }
     }
 
-    fn try_and_move_down_left(self: &mut Game) {
+    fn try_and_move_down_left(self: &mut Tetris) {
         self.active_piece.position.y += 1;
         self.active_piece.position.x -= 1;
 
@@ -273,7 +279,7 @@ impl Game {
         }
     }
 
-    fn try_and_move_down_right(self: &mut Game) {
+    fn try_and_move_down_right(self: &mut Tetris) {
         self.active_piece.position.y += 1;
         self.active_piece.position.x += 1;
 
@@ -286,7 +292,7 @@ impl Game {
     // Just move down, and report if hit bottom
     // Stick is a separate command
 
-    pub fn move_down_and_stick(self: &mut Game) -> MoveOutcome {
+    pub fn move_down_and_stick(self: &mut Tetris) -> MoveOutcome {
         self.active_piece.position.y += 1;
 
         if is_invalid_state(&self.active_piece, &self.board) {
@@ -296,16 +302,16 @@ impl Game {
             self.spawn_next_piece();
 
             if is_invalid_state(&self.active_piece, &self.board) {
-                return GameOver;
+                return MoveOutcome::GameOver;
             } else {
-                return SpawnedNewPiece;
+                return MoveOutcome::SpawnedNewPiece;
             }
         }
 
-        return NothingSpecial;
+        return MoveOutcome::NothingSpecial;
     }
 
-    pub fn slam(self: &mut Game) -> MoveOutcome {
+    pub fn slam(self: &mut Tetris) -> MoveOutcome {
         loop {
             self.active_piece.position.y += 1;
 
@@ -316,17 +322,17 @@ impl Game {
                 self.spawn_next_piece();
 
                 if is_invalid_state(&self.active_piece, &self.board) {
-                    return GameOver;
+                    return MoveOutcome::GameOver;
                 } else {
-                    return SpawnedNewPiece;
+                    return MoveOutcome::SpawnedNewPiece;
                 }
             }
         }
     }
 
-    fn stick_current_piece(self: &mut Game) {
-        Game::stick_piece_to_board(&self.active_piece, &mut self.board);
-        Game::clear_full_lines(&mut self.board);
+    fn stick_current_piece(self: &mut Tetris) {
+        Tetris::stick_piece_to_board(&self.active_piece, &mut self.board);
+        Tetris::clear_full_lines(&mut self.board);
     }
 
     fn clear_full_lines(board: &mut Board) {
@@ -364,7 +370,7 @@ impl Game {
         board.blocks[(piece.position.y + piece.blocks()[3].y) as usize][(piece.position.x + piece.blocks()[3].x) as usize].block_type = piece.block_type;
     }
 
-    pub fn render_state(self: &mut Game) -> RenderState {
+    pub fn render_state(self: &mut Tetris) -> TetrisState {
         let ghost_piece: Piece = calculate_and_create_ghost_piece(&self.active_piece, &self.board);
 
         let next_pieces_board = NextPiecesBoard::from_sequence(&self.sequence, &self.sequence_index);
@@ -372,10 +378,10 @@ impl Game {
 
         let mut board = self.board;
 
-        Game::stick_piece_to_board(&self.active_piece, &mut board);
-        Game::stick_piece_to_board(&ghost_piece, &mut board);
+        Tetris::stick_piece_to_board(&ghost_piece, &mut board);
+        Tetris::stick_piece_to_board(&self.active_piece, &mut board);
 
-        return RenderState {
+        return TetrisState {
             board,
             held_piece_board,
             next_pieces_board,
@@ -755,13 +761,6 @@ impl Piece {
     }
 }
 
-#[derive(PartialEq)]
-pub enum MoveOutcome {
-    SpawnedNewPiece,
-    GameOver,
-    NothingSpecial,
-}
-
 fn calculate_and_create_ghost_piece(piece: &Piece, board: &Board) -> Piece {
     let mut ghost_piece = *piece;
     ghost_piece.block_type = BlockType::Ghost;
@@ -788,26 +787,26 @@ fn piece_is_out_of_bounds (piece: &Piece, board: &Board) -> bool {
 
     return
         piece.position.x + piece.blocks()[0].x < 0 ||
-        piece.position.x + piece.blocks()[1].x < 0 ||
-        piece.position.x + piece.blocks()[2].x < 0 ||
-        piece.position.x + piece.blocks()[3].x < 0 ||
-        piece.position.y + piece.blocks()[0].y < 0 ||
-        piece.position.y + piece.blocks()[1].y < 0 ||
-        piece.position.y + piece.blocks()[2].y < 0 ||
-        piece.position.y + piece.blocks()[3].y < 0 ||
-        piece.position.x + piece.blocks()[0].x == board_width  as i8 ||
-        piece.position.x + piece.blocks()[1].x == board_width  as i8 ||
-        piece.position.x + piece.blocks()[2].x == board_width  as i8 ||
-        piece.position.x + piece.blocks()[3].x == board_width  as i8 ||
-        piece.position.y + piece.blocks()[3].y == board_height as i8 ||
-        piece.position.y + piece.blocks()[0].y == board_height as i8 ||
-        piece.position.y + piece.blocks()[1].y == board_height as i8 ||
-        piece.position.y + piece.blocks()[2].y == board_height as i8
+            piece.position.x + piece.blocks()[1].x < 0 ||
+            piece.position.x + piece.blocks()[2].x < 0 ||
+            piece.position.x + piece.blocks()[3].x < 0 ||
+            piece.position.y + piece.blocks()[0].y < 0 ||
+            piece.position.y + piece.blocks()[1].y < 0 ||
+            piece.position.y + piece.blocks()[2].y < 0 ||
+            piece.position.y + piece.blocks()[3].y < 0 ||
+            piece.position.x + piece.blocks()[0].x == board_width  as i8 ||
+            piece.position.x + piece.blocks()[1].x == board_width  as i8 ||
+            piece.position.x + piece.blocks()[2].x == board_width  as i8 ||
+            piece.position.x + piece.blocks()[3].x == board_width  as i8 ||
+            piece.position.y + piece.blocks()[3].y == board_height as i8 ||
+            piece.position.y + piece.blocks()[0].y == board_height as i8 ||
+            piece.position.y + piece.blocks()[1].y == board_height as i8 ||
+            piece.position.y + piece.blocks()[2].y == board_height as i8
 }
 
 fn collisions_exist(active_piece: &Piece, board: &Board) -> bool {
     if
-        board.blocks[(active_piece.position.y + active_piece.blocks()[0].y) as usize][(active_piece.position.x + active_piece.blocks()[0].x) as usize].block_type != BlockType::Empty ||
+    board.blocks[(active_piece.position.y + active_piece.blocks()[0].y) as usize][(active_piece.position.x + active_piece.blocks()[0].x) as usize].block_type != BlockType::Empty ||
         board.blocks[(active_piece.position.y + active_piece.blocks()[1].y) as usize][(active_piece.position.x + active_piece.blocks()[1].x) as usize].block_type != BlockType::Empty ||
         board.blocks[(active_piece.position.y + active_piece.blocks()[2].y) as usize][(active_piece.position.x + active_piece.blocks()[2].x) as usize].block_type != BlockType::Empty ||
         board.blocks[(active_piece.position.y + active_piece.blocks()[3].y) as usize][(active_piece.position.x + active_piece.blocks()[3].x) as usize].block_type != BlockType::Empty

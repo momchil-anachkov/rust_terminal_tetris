@@ -1,14 +1,14 @@
-mod tetris;
 mod renderer;
 mod input_system;
+mod core;
 
 use std::{thread, time};
 use std::time::Duration;
 use device_query::{DeviceQuery, DeviceState, Keycode};
 use crate::input_system::{Command, GameMove, InputSystem};
 use crate::renderer::TerminalRenderer;
-use crate::tetris::{Game, RenderState};
-use crate::tetris::MoveOutcome::{GameOver, SpawnedNewPiece};
+use crate::core::tetris::Tetris;
+use crate::core::tetris::MoveOutcome::{GameOver, SpawnedNewPiece};
 
 const TICK_INTERVAL_TIME: u128 = 1000000;
 const KEY_REPEAT_INTERVAL: u128 = 100000;
@@ -21,7 +21,7 @@ fn main() -> Result<(), ()> {
     let mut input_system = InputSystem::new(TICK_INTERVAL_TIME, KEY_REPEAT_INTERVAL);
     input_system.start();
 
-    let mut game: Game = Game::new();
+    let mut game: Tetris = Tetris::new();
 
     let mut renderer = TerminalRenderer::new();
 

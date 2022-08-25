@@ -1,12 +1,12 @@
 use std::io::{Read, stdout, Stdout};
 use std::io::stdin;
 use std::io::Write;
-use crate::RenderState;
+use crate::core::tetris::TetrisState;
 
 use crossterm::execute;
 use crossterm::terminal::{Clear, ClearType};
 use crossterm::cursor::{MoveToColumn, MoveToRow};
-use crate::tetris::BlockType;
+use crate::core::tetris::BlockType;
 
 pub struct TerminalRenderer {
     stdout: Stdout,
@@ -40,7 +40,7 @@ impl TerminalRenderer {
         println!("Thanks for playing!");
     }
 
-    pub fn print_board(&mut self, state: &RenderState) {
+    pub fn print_board(&mut self, state: &TetrisState) {
         let game_board_start_column: u16 = 15;
         let next_pieces_board_start_column: u16 = 38;
         let held_piece_board_start_column: u16 = 0;
