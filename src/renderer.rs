@@ -6,41 +6,15 @@ use crate::core::tetris::TetrisState;
 use crossterm::execute;
 use crossterm::terminal::{Clear, ClearType};
 use crossterm::cursor::{MoveToColumn, MoveToRow};
+use crate::core::Renderer;
 use crate::core::tetris::BlockType;
 
 pub struct TerminalRenderer {
     stdout: Stdout,
 }
 
-impl TerminalRenderer {
-    pub fn new() -> TerminalRenderer {
-        return TerminalRenderer {
-            stdout: stdout(),
-        }
-    }
-
-    pub fn setup() {
-        crossterm::terminal::enable_raw_mode().unwrap();
-    }
-
-    pub fn teardown() {
-        crossterm::execute!(
-            stdout(),
-            MoveToRow(0),
-            MoveToColumn(0),
-            Clear(ClearType::All),
-        ).unwrap();
-
-        // Be a good neighbor and read the accumulated junk from stdin so you can finish on a clear terminal
-        let mut junk_input = Vec::new();
-        stdin().read(&mut junk_input).unwrap();
-
-        crossterm::terminal::disable_raw_mode().unwrap();
-
-        println!("Thanks for playing!");
-    }
-
-    pub fn print_board(&mut self, state: &TetrisState) {
+impl Renderer for TerminalRenderer {
+    fn render(&mut self, state: &TetrisState) {
         let game_board_start_column: u16 = 15;
         let next_pieces_board_start_column: u16 = 38;
         let held_piece_board_start_column: u16 = 0;
@@ -130,7 +104,35 @@ impl TerminalRenderer {
             ).unwrap();
         }
     }
+}
 
+impl TerminalRenderer {
+    pub fn new() -> TerminalRenderer {
+        return TerminalRenderer {
+            stdout: stdout(),
+        }
+    }
+
+    pub fn setup() {
+        crossterm::terminal::enable_raw_mode().unwrap();
+    }
+
+    pub fn teardown() {
+        crossterm::execute!(
+            stdout(),
+            MoveToRow(0),
+            MoveToColumn(0),
+            Clear(ClearType::All),
+        ).unwrap();
+
+        // Be a good neighbor and read the accumulated junk from stdin so you can finish on a clear terminal
+        let mut junk_input = Vec::new();
+        stdin().read(&mut junk_input).unwrap();
+
+        crossterm::terminal::disable_raw_mode().unwrap();
+
+        println!("Thanks for playing!");
+    }
 }
 
 fn char_for_block_type(block_type: &BlockType) -> char {

@@ -4,7 +4,8 @@ mod core;
 
 use std::{thread, time};
 use std::time::Duration;
-use crate::input_system::{Command, GameMove, InputSystem};
+use crate::core::Game;
+use crate::input_system::{Command, InputSystem};
 use crate::renderer::TerminalRenderer;
 use crate::core::tetris::Tetris;
 use crate::core::tetris::MoveOutcome::{GameOver, SpawnedNewPiece};
@@ -16,16 +17,14 @@ fn main() -> Result<(), ()> {
     let mut last_frame_start_time: u128 = 0;
     let mut now: u128;
     let mut delta_time: u128;
+
     let mut input_system = InputSystem::new(TICK_INTERVAL_TIME, KEY_REPEAT_INTERVAL);
     input_system.start();
 
-    let mut game: Tetris = Tetris::new();
-
+    TerminalRenderer::setup();
     let mut renderer = TerminalRenderer::new();
 
-    TerminalRenderer::setup();
-
-    renderer.print_board(&game.render_state());
+    let mut game: Game = Game::new(&mut renderer, &mut input_system);
 
     let start = time::Instant::now();
     loop {
@@ -33,37 +32,43 @@ fn main() -> Result<(), ()> {
         delta_time = now - last_frame_start_time;
         last_frame_start_time = now;
 
-        let command = input_system.process_input(delta_time);
+        let should_exit = game.update(&delta_time);
 
-        match command {
-            Command::MakeGameMove(game_move) => {
-                match game_move {
-                    GameMove::MoveLeft => game.try_and_move_left(),
-                    GameMove::MoveRight => game.try_and_move_right(),
-                    GameMove::MoveDown => game.try_and_move_down(),
-                    GameMove::RotateClockwise => game.rotate_clockwise(),
-                    GameMove::RotateCounterClockwise => game.rotate_counterclockwise(),
-                    GameMove::Hold => game.hold_piece(),
-                    GameMove::Tick => {
-                        match game.move_down_and_stick() {
-                            SpawnedNewPiece => input_system.reset_tick_timer(),
-                            GameOver => return exit(),
-                            _ => {}
-                        }
-                    },
-                    GameMove::Slam => {
-                        match game.slam() {
-                            SpawnedNewPiece => input_system.reset_tick_timer(),
-                            GameOver => return exit(),
-                            _ => {}
-                        }
-                    },
-                }
-                renderer.print_board(&game.render_state());
-            }
-            Command::Exit => return exit(),
-            Command::NoOp => {}
+        if should_exit {
+            return exit();
         }
+
+        // let command = input_system.process_input(delta_time);
+
+        // match command {
+        //     Command::MakeGameMove(game_move) => {
+        //         match game_move {
+        //             GameMove::MoveLeft => game.try_and_move_left(),
+        //             GameMove::MoveRight => game.try_and_move_right(),
+        //             GameMove::MoveDown => game.try_and_move_down(),
+        //             GameMove::RotateClockwise => game.rotate_clockwise(),
+        //             GameMove::RotateCounterClockwise => game.rotate_counterclockwise(),
+        //             GameMove::Hold => game.hold_piece(),
+        //             GameMove::Tick => {
+        //                 match game.move_down_and_stick() {
+        //                     SpawnedNewPiece => input_system.reset_tick_timer(),
+        //                     GameOver => return exit(),
+        //                     _ => {}
+        //                 }
+        //             },
+        //             GameMove::Slam => {
+        //                 match game.slam() {
+        //                     SpawnedNewPiece => input_system.reset_tick_timer(),
+        //                     GameOver => return exit(),
+        //                     _ => {}
+        //                 }
+        //             },
+        //         }
+        //         renderer.print_board(&game.render_state());
+        //     }
+        //     Command::Exit => return exit(),
+        //     Command::NoOp => {}
+        // }
         thread::sleep(Duration::from_millis(1));
     }
 }
