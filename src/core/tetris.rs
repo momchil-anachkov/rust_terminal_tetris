@@ -828,7 +828,7 @@ fn piece_is_out_of_bounds (piece: &Piece, board: &Board) -> bool {
 
 fn collisions_exist(active_piece: &Piece, board: &Board) -> bool {
     if
-    board.blocks[(active_piece.position.y + active_piece.blocks()[0].y) as usize][(active_piece.position.x + active_piece.blocks()[0].x) as usize].block_type != BlockType::Empty ||
+        board.blocks[(active_piece.position.y + active_piece.blocks()[0].y) as usize][(active_piece.position.x + active_piece.blocks()[0].x) as usize].block_type != BlockType::Empty ||
         board.blocks[(active_piece.position.y + active_piece.blocks()[1].y) as usize][(active_piece.position.x + active_piece.blocks()[1].x) as usize].block_type != BlockType::Empty ||
         board.blocks[(active_piece.position.y + active_piece.blocks()[2].y) as usize][(active_piece.position.x + active_piece.blocks()[2].x) as usize].block_type != BlockType::Empty ||
         board.blocks[(active_piece.position.y + active_piece.blocks()[3].y) as usize][(active_piece.position.x + active_piece.blocks()[3].x) as usize].block_type != BlockType::Empty

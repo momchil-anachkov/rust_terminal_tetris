@@ -4,7 +4,7 @@ pub mod ticker;
 use tetris::TetrisState;
 use crate::{InputSystem, Tetris};
 use crate::core::tetris::MoveOutcome;
-use crate::core::tetris::MoveOutcome::NothingSpecial;
+use crate::core::tetris::MoveOutcome::{GameOver, NothingSpecial};
 use crate::core::ticker::Ticker;
 
 #[derive(PartialEq)]
@@ -76,7 +76,10 @@ impl Game<'_> {
             let should_tick = self.ticker.update(&delta_time);
 
             if should_tick {
-                self.tetris.move_down_and_stick();
+                let move_outcome = self.tetris.move_down_and_stick();
+                if move_outcome == GameOver {
+                    return true;
+                }
                 self.render();
             }
         }
