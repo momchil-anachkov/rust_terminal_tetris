@@ -1,4 +1,5 @@
 use rand::seq::SliceRandom;
+use crate::core::tetris::MoveOutcome::NothingSpecial;
 
 pub const BOARD_WIDTH:  usize = 10;
 pub const BOARD_HEIGHT: usize = 20;
@@ -14,6 +15,7 @@ pub enum MoveOutcome {
     SpawnedNewPiece,
     GameOver,
     NothingSpecial,
+    MadeContactOnBottom,
 }
 
 #[derive(Clone)]
@@ -138,7 +140,7 @@ impl Tetris {
         return sequence;
     }
 
-    pub fn hold_piece(self: &mut Tetris) {
+    pub fn hold_piece(self: &mut Tetris) -> MoveOutcome {
         match self.held_piece {
             None => {
                 self.held_piece = Some(PieceType::from_block_type(&self.active_piece.block_type));
@@ -151,9 +153,11 @@ impl Tetris {
                 Tetris::move_piece_to_spawn_point(&mut self.active_piece, &self.board);
             }
         }
+
+        return NothingSpecial;
     }
 
-    pub fn rotate_clockwise(self: &mut Tetris) {
+    pub fn try_and_rotate_clockwise(self: &mut Tetris) -> MoveOutcome {
         self.active_piece.rotate_clockwise();
 
         if is_invalid_state(&self.active_piece, &self.board) {
@@ -183,9 +187,11 @@ impl Tetris {
         if is_invalid_state(&self.active_piece, &self.board) {
             self.active_piece.rotate_counterclockwise();
         }
+
+        return NothingSpecial;
     }
 
-    pub fn rotate_counterclockwise(self: &mut Tetris) {
+    pub fn try_and_rotate_counterclockwise(self: &mut Tetris) -> MoveOutcome {
         self.active_piece.rotate_counterclockwise();
 
         if is_invalid_state(&self.active_piece, &self.board) {
@@ -215,30 +221,38 @@ impl Tetris {
         if is_invalid_state(&self.active_piece, &self.board) {
             self.active_piece.rotate_clockwise();
         }
+
+        return NothingSpecial;
     }
 
-    pub fn try_and_move_left(self: &mut Tetris) {
+    pub fn try_and_move_left(self: &mut Tetris) -> MoveOutcome {
         self.active_piece.position.x -= 1;
 
         if is_invalid_state(&self.active_piece, &self.board) {
             self.active_piece.position.x += 1;
         }
+
+        return NothingSpecial;
     }
 
-    pub fn try_and_move_right(self: &mut Tetris) {
+    pub fn try_and_move_right(self: &mut Tetris) -> MoveOutcome {
         self.active_piece.position.x += 1;
 
         if is_invalid_state(&self.active_piece, &self.board) {
             self.active_piece.position.x -= 1;
         }
+
+        return NothingSpecial;
     }
 
-    pub fn try_and_move_down(self: &mut Tetris) {
+    pub fn try_and_move_down(self: &mut Tetris) -> MoveOutcome {
         self.active_piece.position.y += 1;
 
         if is_invalid_state(&self.active_piece, &self.board) {
             self.active_piece.position.y -= 1;
         }
+
+        return NothingSpecial
     }
 
     fn try_and_move_up(self: &mut Tetris) {
@@ -445,13 +459,13 @@ pub struct NextPiecesBoard {
 
 impl NextPiecesBoard {
     fn from_sequence(sequence: &PieceSequence, sequence_index: &usize) -> NextPiecesBoard {
-        let normalized_index: usize = sequence_index % sequence.len();
+        let sequence_length = sequence.len();
 
         let next_pieces_types: [&PieceType; 4] = [
-            &sequence[normalized_index + 0],
-            &sequence[normalized_index + 1],
-            &sequence[normalized_index + 2],
-            &sequence[normalized_index + 3],
+            &sequence[(sequence_index + 0) % sequence_length],
+            &sequence[(sequence_index + 1) % sequence_length],
+            &sequence[(sequence_index + 2) % sequence_length],
+            &sequence[(sequence_index + 3) % sequence_length],
         ];
 
         let mut next_pieces = next_pieces_types.map(|piece_type| {

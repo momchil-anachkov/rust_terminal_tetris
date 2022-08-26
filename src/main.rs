@@ -9,6 +9,7 @@ use crate::input_system::{Command, InputSystem};
 use crate::renderer::TerminalRenderer;
 use crate::core::tetris::Tetris;
 use crate::core::tetris::MoveOutcome::{GameOver, SpawnedNewPiece};
+use crate::core::ticker::Ticker;
 
 const TICK_INTERVAL_TIME: u128 = 1000000;
 const KEY_REPEAT_INTERVAL: u128 = 100000;
@@ -18,15 +19,17 @@ fn main() -> Result<(), ()> {
     let mut now: u128;
     let mut delta_time: u128;
 
-    let mut input_system = InputSystem::new(TICK_INTERVAL_TIME, KEY_REPEAT_INTERVAL);
+    let mut input_system = InputSystem::new(KEY_REPEAT_INTERVAL);
     input_system.start();
 
     TerminalRenderer::setup();
-    let mut renderer = TerminalRenderer::new();
 
-    let mut game: Game = Game::new(&mut renderer, &mut input_system);
+    let mut renderer = TerminalRenderer::new();
+    let mut ticker: Ticker = Ticker::new(TICK_INTERVAL_TIME);
+    let mut game: Game = Game::new(&mut renderer, &mut input_system, &mut ticker);
 
     let start = time::Instant::now();
+    game.render();
     loop {
         now = start.elapsed().as_micros();
         delta_time = now - last_frame_start_time;
@@ -38,38 +41,7 @@ fn main() -> Result<(), ()> {
             return exit();
         }
 
-        // let command = input_system.process_input(delta_time);
-
-        // match command {
-        //     Command::MakeGameMove(game_move) => {
-        //         match game_move {
-        //             GameMove::MoveLeft => game.try_and_move_left(),
-        //             GameMove::MoveRight => game.try_and_move_right(),
-        //             GameMove::MoveDown => game.try_and_move_down(),
-        //             GameMove::RotateClockwise => game.rotate_clockwise(),
-        //             GameMove::RotateCounterClockwise => game.rotate_counterclockwise(),
-        //             GameMove::Hold => game.hold_piece(),
-        //             GameMove::Tick => {
-        //                 match game.move_down_and_stick() {
-        //                     SpawnedNewPiece => input_system.reset_tick_timer(),
-        //                     GameOver => return exit(),
-        //                     _ => {}
-        //                 }
-        //             },
-        //             GameMove::Slam => {
-        //                 match game.slam() {
-        //                     SpawnedNewPiece => input_system.reset_tick_timer(),
-        //                     GameOver => return exit(),
-        //                     _ => {}
-        //                 }
-        //             },
-        //         }
-        //         renderer.print_board(&game.render_state());
-        //     }
-        //     Command::Exit => return exit(),
-        //     Command::NoOp => {}
-        // }
-        thread::sleep(Duration::from_millis(1));
+        thread::sleep(Duration::from_millis(10));
     }
 }
 
