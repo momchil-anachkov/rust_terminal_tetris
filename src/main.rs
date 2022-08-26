@@ -5,10 +5,10 @@ mod core;
 use std::{thread, time};
 use std::time::Duration;
 use crate::core::Game;
-use crate::input_system::{Command, InputSystem};
+use crate::input_system::{InputSystem};
 use crate::renderer::TerminalRenderer;
 use crate::core::tetris::Tetris;
-use crate::core::tetris::MoveOutcome::{GameOver, SpawnedNewPiece};
+use crate::core::tetris::MoveOutcome::{SpawnedNewPiece};
 use crate::core::ticker::Ticker;
 
 const TICK_INTERVAL_TIME: u128 = 1000000;
@@ -20,7 +20,6 @@ fn main() -> Result<(), ()> {
     let mut delta_time: u128;
 
     let mut input_system = InputSystem::new(KEY_REPEAT_INTERVAL);
-    input_system.start();
 
     TerminalRenderer::setup();
 

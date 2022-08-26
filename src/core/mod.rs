@@ -3,7 +3,6 @@ pub mod ticker;
 
 use tetris::TetrisState;
 use crate::{InputSystem, Tetris};
-use crate::core::RenderState::{Paused, Running};
 use crate::core::tetris::MoveOutcome;
 use crate::core::tetris::MoveOutcome::NothingSpecial;
 use crate::core::ticker::Ticker;
@@ -144,8 +143,6 @@ impl Game<'_> {
                         _ => (),
                     }
                 }
-
-                (_, _) => (),
             };
 
             self.renderer.render(&self.state());

@@ -2,28 +2,8 @@ use device_query::{DeviceState, Keycode};
 use device_query::DeviceQuery;
 use crate::core::Key;
 
-#[derive(PartialEq)]
-pub enum GameMove {
-    MoveLeft,
-    MoveRight,
-    MoveDown,
-    RotateClockwise,
-    RotateCounterClockwise,
-    Tick,
-    Slam,
-    Hold,
-}
-
-#[derive(PartialEq)]
-pub enum Command {
-    MakeGameMove(GameMove),
-    NoOp,
-    Exit,
-}
-
 pub struct InputSystem {
     device_state: DeviceState,
-    is_running: bool,
     last_frame_keys: Vec<Keycode>,
     current_frame_keys: Vec<Keycode>,
     key_repeat_interval: u128,
@@ -37,7 +17,6 @@ impl InputSystem {
         let device_state = DeviceState::new();
         return InputSystem {
             device_state,
-            is_running: false,
             key_repeat_interval,
             last_frame_keys: Vec::new(),
             current_frame_keys: Vec::new(),
@@ -46,16 +25,6 @@ impl InputSystem {
             time_since_last_down: 0,
         }
     }
-
-    pub fn stop(&mut self) {
-        self.is_running = false;
-    }
-
-    pub fn start(&mut self) {
-        self.is_running = true;
-    }
-
-    // TODO: Ticker
 
     pub fn get_keys(&mut self, delta_time: &u128) -> Vec<Key> {
         let mut keys: Vec<Key> = Vec::new();
@@ -142,11 +111,6 @@ impl InputSystem {
         self.last_frame_keys = self.current_frame_keys.clone();
 
         return keys;
-    }
-
-    fn return_command(&mut self, command: Command) -> Command {
-        self.last_frame_keys = self.current_frame_keys.clone();
-        return command;
     }
 
     fn is_key_pressed(&self, key: &Keycode) -> bool {
