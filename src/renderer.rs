@@ -5,7 +5,7 @@ use crate::core::tetris::TetrisState;
 
 use crossterm::execute;
 use crossterm::terminal::{Clear, ClearType};
-use crossterm::cursor::{MoveToColumn, MoveToRow};
+use crossterm::cursor::{MoveToColumn, MoveToRow, MoveDown};
 use crate::core::{Renderer, RenderState};
 use crate::core::tetris::BlockType;
 
@@ -17,9 +17,10 @@ impl Renderer for TerminalRenderer {
     fn render(&mut self, state: &RenderState) {
         match state {
             RenderState::Running(tetris_state) => {
-                self.render_tetris_state(tetris_state);
+                self.render_tetris_state(&tetris_state);
             }
-            RenderState::Paused() => {
+            RenderState::Paused(menu) => {
+            // RenderState::Paused() => {
                 execute!(
                     self.stdout,
                     Clear(ClearType::All),
@@ -27,8 +28,22 @@ impl Renderer for TerminalRenderer {
                     MoveToRow(0),
                 ).unwrap();
 
-                write!(self.stdout, "Paused. Press P to Unpause").unwrap();
-                self.stdout.flush().unwrap();
+                for index in 0..menu.items.len() {
+                    let format = if index == menu.selected_item {
+                        write!(self.stdout, "* {}", menu.items[index]).unwrap();
+                    } else {
+                        write!(self.stdout, "  {}", menu.items[index]).unwrap();
+                    };
+
+                    execute!(
+                        self.stdout,
+                        MoveToColumn(0),
+                        MoveDown(0),
+                    ).unwrap();
+                }
+
+                // write!(self.stdout, "Paused. Press P to Unpause").unwrap();
+                // self.stdout.flush().unwrap();
             }
         }
     }

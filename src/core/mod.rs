@@ -31,9 +31,36 @@ pub enum Key {
     Enter,
 }
 
-struct Menu {
-    items: Vec<String>,
-    selected_item: usize,
+pub struct Menu <'a> {
+    pub items: Vec<&'a str>,
+    pub selected_item: usize,
+}
+
+impl Menu<'_> {
+    pub fn new(items: Vec<&str>) -> Menu {
+        return Menu {
+            items,
+            selected_item: 0,
+        }
+    }
+
+    pub fn move_down(&mut self) {
+        let len = self.items.len();
+        if self.selected_item == len-1 {
+            self.selected_item = 0;
+        } else {
+            self.selected_item += 1;
+        }
+    }
+
+    pub fn move_up(&mut self) {
+        let len = self.items.len();
+        if self.selected_item == 0 {
+            self.selected_item = len-1;
+        } else {
+            self.selected_item -= 1;
+        }
+    }
 }
 
 pub struct Game<'a> {
@@ -42,11 +69,12 @@ pub struct Game<'a> {
     input_system: &'a mut InputSystem,
     ticker: &'a mut Ticker,
     renderer: &'a mut dyn Renderer,
+    pause_menu: Menu<'a>,
 }
 
-pub enum RenderState {
+pub enum RenderState<'a> {
     Running(TetrisState),
-    Paused() // TODO: Render menu
+    Paused(&'a Menu<'a>),
 }
 
 pub trait Renderer {
@@ -65,6 +93,7 @@ impl Game<'_> {
             renderer,
             input_system,
             ticker,
+            pause_menu: Menu::new(Vec::from(["Resume", "Exit"])),
         }
     }
 
@@ -88,14 +117,15 @@ impl Game<'_> {
     }
 
     pub fn render(&mut self) {
-        self.renderer.render(&self.state());
+        let state = Game::state(&self.playing_state, self.tetris.state(), &self.pause_menu);
+        self.renderer.render(&state);
     }
 
-    fn state(&self) -> RenderState {
-        match &self.playing_state {
-            PlayingState::Running => RenderState::Running(self.tetris.state()),
-            PlayingState::Paused =>  RenderState::Paused(),
-            PlayingState::Stopped => RenderState::Paused(),
+    fn state<'a>(playing_state: &'a PlayingState, tetris_state: TetrisState, pause_menu: &'a Menu) -> RenderState<'a> {
+        match playing_state {
+            PlayingState::Running => RenderState::Running(tetris_state),
+            PlayingState::Paused => RenderState::Paused(pause_menu),
+            PlayingState::Stopped => RenderState::Paused(pause_menu),
         }
     }
 
@@ -130,8 +160,8 @@ impl Game<'_> {
 
                 (PlayingState::Paused, key) => {
                     match key {
-                        Key::Up   =>  (/* Move up in the pause menu */),
-                        Key::Down =>  (/* Move down in the pause menu */),
+                        Key::Up   =>  self.pause_menu.move_up(),
+                        Key::Down =>  self.pause_menu.move_down(),
                         Key::Enter => (/* Select current menu item */),
                         Key::P     => self.playing_state = PlayingState::Running,
                         _ => (),
@@ -148,7 +178,7 @@ impl Game<'_> {
                 }
             };
 
-            self.renderer.render(&self.state());
+            self.renderer.render(&Game::state(&self.playing_state, self.tetris.state(), &self.pause_menu));
         }
 
         return false;
