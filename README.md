@@ -12,7 +12,7 @@ Tetris in the terminal. Written in Rust.
 - ✅ Hold piece
 - ✅ Tick reset on slam
 - ❌ Incrementing speed/levels
-- ❌ 1 second wait before stick
+- ❌ 1 second grace time before stick
 - ❌ GIFs for each of the game features
 - ❌ Line clear animation
 - ✅ Play/Pause

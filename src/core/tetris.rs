@@ -392,7 +392,7 @@ impl Tetris {
         board.blocks[(piece.position.y + piece.blocks()[3].y) as usize][(piece.position.x + piece.blocks()[3].x) as usize].block_type = piece.block_type;
     }
 
-    pub fn state(self: &mut Tetris) -> TetrisState {
+    pub fn state(&self) -> TetrisState {
         let ghost_piece: Piece = calculate_and_create_ghost_piece(&self.active_piece, &self.board);
 
         let next_pieces_board = NextPiecesBoard::from_sequence(&self.sequence, &self.sequence_index);

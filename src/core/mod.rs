@@ -3,7 +3,7 @@ pub mod ticker;
 
 use tetris::TetrisState;
 use crate::{InputSystem, Tetris};
-use crate::core::PlayingState::{Paused, Running};
+use crate::core::RenderState::{Paused, Running};
 use crate::core::tetris::MoveOutcome;
 use crate::core::tetris::MoveOutcome::NothingSpecial;
 use crate::core::ticker::Ticker;
@@ -45,8 +45,13 @@ pub struct Game<'a> {
     renderer: &'a mut dyn Renderer,
 }
 
+pub enum RenderState {
+    Running(TetrisState),
+    Paused() // TODO: Render menu
+}
+
 pub trait Renderer {
-    fn render(&mut self, state: &TetrisState);
+    fn render(&mut self, state: &RenderState);
 }
 
 impl Game<'_> {
@@ -56,7 +61,7 @@ impl Game<'_> {
         ticker: &'a mut Ticker,
     ) -> Game<'a> {
         return Game {
-            playing_state: Running,
+            playing_state: PlayingState::Running,
             tetris: Tetris::new(),
             renderer,
             input_system,
@@ -68,12 +73,12 @@ impl Game<'_> {
         let keys = self.input_system.get_keys(delta_time);
         let should_close = self.process_input(&keys);
 
-        if self.playing_state == Running {
+        if self.playing_state == PlayingState::Running {
             let should_tick = self.ticker.update(&delta_time);
 
             if should_tick {
                 self.tetris.move_down_and_stick();
-                self.renderer.render(&self.tetris.state());
+                self.render();
             }
         }
 
@@ -81,7 +86,15 @@ impl Game<'_> {
     }
 
     pub fn render(&mut self) {
-        self.renderer.render(&self.tetris.state());
+        self.renderer.render(&self.state());
+    }
+
+    fn state(&self) -> RenderState {
+        match &self.playing_state {
+            PlayingState::Running => RenderState::Running(self.tetris.state()),
+            PlayingState::Paused =>  RenderState::Paused(),
+            PlayingState::Stopped => RenderState::Paused(),
+        }
     }
 
     fn process_input(&mut self, keys: &Vec<Key>) -> bool {
@@ -101,7 +114,7 @@ impl Game<'_> {
                         Key::X     => self.tetris.try_and_rotate_counterclockwise(),
                         Key::Shift => self.tetris.hold_piece(),
                         Key::Space => self.tetris.slam(),
-                        Key::P     => { self.playing_state = Paused; NothingSpecial },
+                        Key::P     => { self.playing_state = PlayingState::Paused; NothingSpecial },
                         _          => NothingSpecial,
                     };
 
@@ -117,7 +130,7 @@ impl Game<'_> {
                         Key::Up   =>  (/* Move up in the pause menu */),
                         Key::Down =>  (/* Move down in the pause menu */),
                         Key::Enter => (/* Select current menu item */),
-                        Key::P     => self.playing_state = Running,
+                        Key::P     => self.playing_state = PlayingState::Running,
                         _ => (),
                     }
                 }
@@ -134,7 +147,7 @@ impl Game<'_> {
                 (_, _) => (),
             };
 
-            self.renderer.render(&self.tetris.state());
+            self.renderer.render(&self.state());
         }
 
         return false;

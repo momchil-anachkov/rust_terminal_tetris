@@ -6,7 +6,7 @@ use crate::core::tetris::TetrisState;
 use crossterm::execute;
 use crossterm::terminal::{Clear, ClearType};
 use crossterm::cursor::{MoveToColumn, MoveToRow};
-use crate::core::Renderer;
+use crate::core::{Renderer, RenderState};
 use crate::core::tetris::BlockType;
 
 pub struct TerminalRenderer {
@@ -14,7 +14,28 @@ pub struct TerminalRenderer {
 }
 
 impl Renderer for TerminalRenderer {
-    fn render(&mut self, state: &TetrisState) {
+    fn render(&mut self, state: &RenderState) {
+        match state {
+            RenderState::Running(tetris_state) => {
+                self.render_tetris_state(tetris_state);
+            }
+            RenderState::Paused() => {
+                execute!(
+                    self.stdout,
+                    Clear(ClearType::All),
+                    MoveToColumn(0),
+                    MoveToRow(0),
+                ).unwrap();
+
+                write!(self.stdout, "Paused. Press P to Unpause").unwrap();
+                self.stdout.flush().unwrap();
+            }
+        }
+    }
+}
+
+impl TerminalRenderer {
+    fn render_tetris_state(&mut self, state: &TetrisState) {
         let game_board_start_column: u16 = 15;
         let next_pieces_board_start_column: u16 = 38;
         let held_piece_board_start_column: u16 = 0;
@@ -104,9 +125,7 @@ impl Renderer for TerminalRenderer {
             ).unwrap();
         }
     }
-}
 
-impl TerminalRenderer {
     pub fn new() -> TerminalRenderer {
         return TerminalRenderer {
             stdout: stdout(),
