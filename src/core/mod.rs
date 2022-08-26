@@ -121,6 +121,7 @@ impl Game<'_> {
                     match move_outcome {
                         MoveOutcome::SpawnedNewPiece     => self.ticker.reset_tick_timer(),
                         MoveOutcome::MadeContactOnBottom => self.ticker.reset_tick_timer(),
+                        MoveOutcome::GameOver => { return true },
                         _                                => (),
                     }
                 }
