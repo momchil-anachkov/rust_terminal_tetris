@@ -56,7 +56,7 @@ impl Game<'_> {
         ticker: &'a mut Ticker,
     ) -> Game<'a> {
         return Game {
-            playing_state: PlayingState::Running,
+            playing_state: Running,
             tetris: Tetris::new(),
             renderer,
             input_system,

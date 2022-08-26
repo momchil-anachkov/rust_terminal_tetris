@@ -1,5 +1,6 @@
 use rand::seq::SliceRandom;
 use crate::core::tetris::MoveOutcome::NothingSpecial;
+use crate::SpawnedNewPiece;
 
 pub const BOARD_WIDTH:  usize = 10;
 pub const BOARD_HEIGHT: usize = 20;
@@ -64,6 +65,7 @@ pub enum BlockType {
 
 pub struct Tetris {
     sequence_index: usize,
+    can_hold_piece: bool,
     sequence: PieceSequence,
     active_piece: Piece,
     held_piece: Option<PieceType>,
@@ -87,6 +89,7 @@ impl Tetris {
             sequence,
             active_piece,
             held_piece: None,
+            can_hold_piece: true,
             board,
         };
 
@@ -109,10 +112,11 @@ impl Tetris {
     }
 
     fn spawn_next_piece(self: &mut Tetris) {
-        let a = Tetris::get_piece_from_sequence(&self.sequence, self.sequence_index);
-        self.active_piece = Piece::from_piece_type(&a);
+        let piece_type = Tetris::get_piece_from_sequence(&self.sequence, self.sequence_index);
+        self.active_piece = Piece::from_piece_type(&piece_type);
         Tetris::move_piece_to_spawn_point(&mut self.active_piece, &self.board);
         self.sequence_index += 1;
+        self.can_hold_piece = true;
     }
 
     fn make_piece_sequence() -> [PieceType; 350] {
@@ -145,16 +149,20 @@ impl Tetris {
             None => {
                 self.held_piece = Some(PieceType::from_block_type(&self.active_piece.block_type));
                 self.spawn_next_piece();
+                self.can_hold_piece = false;
             }
             Some(held_piece) => {
-                let new_active_piece = Piece::from_piece_type(&held_piece);
-                self.held_piece = Some(PieceType::from_block_type(&self.active_piece.block_type));
-                self.active_piece = new_active_piece;
-                Tetris::move_piece_to_spawn_point(&mut self.active_piece, &self.board);
+                if self.can_hold_piece {
+                    let new_active_piece = Piece::from_piece_type(&held_piece);
+                    self.held_piece = Some(PieceType::from_block_type(&self.active_piece.block_type));
+                    self.active_piece = new_active_piece;
+                    Tetris::move_piece_to_spawn_point(&mut self.active_piece, &self.board);
+                    self.can_hold_piece = false;
+                }
             }
         }
 
-        return NothingSpecial;
+        return SpawnedNewPiece;
     }
 
     pub fn try_and_rotate_clockwise(self: &mut Tetris) -> MoveOutcome {
