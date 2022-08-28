@@ -41,9 +41,6 @@ impl Renderer for TerminalRenderer {
                         MoveDown(0),
                     ).unwrap();
                 }
-
-                // write!(self.stdout, "Paused. Press P to Unpause").unwrap();
-                // self.stdout.flush().unwrap();
             }
         }
     }

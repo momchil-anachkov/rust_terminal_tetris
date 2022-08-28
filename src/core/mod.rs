@@ -65,8 +65,7 @@ impl Menu<'_> {
 
 pub struct Game<'a> {
     playing_state: PlayingState,
-    pub tetris: Tetris,
-    input_system: &'a mut InputSystem,
+    pub tetris: Tetris, // TODO: Private
     ticker: &'a mut Ticker,
     renderer: &'a mut dyn Renderer,
     pause_menu: Menu<'a>,
@@ -84,21 +83,18 @@ pub trait Renderer {
 impl Game<'_> {
     pub fn new<'a>(
         renderer: &'a mut dyn Renderer,
-        input_system: &'a mut InputSystem,
         ticker: &'a mut Ticker,
     ) -> Game<'a> {
         return Game {
             playing_state: PlayingState::Running,
             tetris: Tetris::new(),
             renderer,
-            input_system,
             ticker,
             pause_menu: Menu::new(Vec::from(["Resume", "Exit"])),
         }
     }
 
-    pub fn update(&mut self, delta_time: &u128) -> bool {
-        let keys = self.input_system.get_keys(delta_time);
+    pub fn update(&mut self, keys: &Vec<Key>, delta_time: &u128) -> bool {
         let should_close = self.process_input(&keys);
 
         if self.playing_state == PlayingState::Running {

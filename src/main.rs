@@ -25,7 +25,7 @@ fn main() -> Result<(), ()> {
 
     let mut renderer = TerminalRenderer::new();
     let mut ticker: Ticker = Ticker::new(TICK_INTERVAL_TIME);
-    let mut game: Game = Game::new(&mut renderer, &mut input_system, &mut ticker);
+    let mut game: Game = Game::new(&mut renderer, &mut ticker);
 
     let start = time::Instant::now();
     game.render();
@@ -33,8 +33,9 @@ fn main() -> Result<(), ()> {
         now = start.elapsed().as_micros();
         delta_time = now - last_frame_start_time;
         last_frame_start_time = now;
+        let keys = input_system.get_keys(&delta_time);
 
-        let should_exit = game.update(&delta_time);
+        let should_exit = game.update(&keys, &delta_time);
 
         if should_exit {
             return exit();
