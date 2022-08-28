@@ -4,7 +4,7 @@ mod core;
 
 use std::{thread, time};
 use std::time::Duration;
-use crate::core::Game;
+use crate::core::{Game, Renderer, UpdateOutcome};
 use crate::input_system::{InputSystem};
 use crate::renderer::TerminalRenderer;
 use crate::core::tetris::Tetris;
@@ -25,21 +25,26 @@ fn main() -> Result<(), ()> {
 
     let mut renderer = TerminalRenderer::new();
     let mut ticker: Ticker = Ticker::new(TICK_INTERVAL_TIME);
-    let mut game: Game = Game::new(&mut renderer, &mut ticker);
+    let mut game: Game = Game::new(&mut ticker);
 
     let start = time::Instant::now();
-    game.render();
+    let state = game.state();
+    renderer.render(&state);
+
     loop {
         now = start.elapsed().as_micros();
         delta_time = now - last_frame_start_time;
         last_frame_start_time = now;
         let keys = input_system.get_keys(&delta_time);
 
-        let should_exit = game.update(&keys, &delta_time);
+        let update_outcome = game.update(&keys, &delta_time);
 
-        if should_exit {
-            return exit();
+        match update_outcome {
+            UpdateOutcome::Exit => { return exit(); }
+            UpdateOutcome::Render => { renderer.render(&game.state()) }
+            UpdateOutcome::NothingSpecial => {}
         }
+
 
         thread::sleep(Duration::from_millis(10));
     }

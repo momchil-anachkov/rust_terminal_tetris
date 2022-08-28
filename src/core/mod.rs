@@ -4,7 +4,6 @@ pub mod ticker;
 use tetris::TetrisState;
 use crate::{InputSystem, Tetris};
 use crate::core::tetris::MoveOutcome;
-use crate::core::tetris::MoveOutcome::{GameOver, NothingSpecial};
 use crate::core::ticker::Ticker;
 
 #[derive(PartialEq)]
@@ -29,6 +28,13 @@ pub enum Key {
     Control,
     C,
     Enter,
+}
+
+#[derive(PartialEq)]
+pub enum UpdateOutcome {
+    Exit,
+    Render,
+    NothingSpecial,
 }
 
 pub struct Menu <'a> {
@@ -67,7 +73,6 @@ pub struct Game<'a> {
     playing_state: PlayingState,
     pub tetris: Tetris, // TODO: Private
     ticker: &'a mut Ticker,
-    renderer: &'a mut dyn Renderer,
     pause_menu: Menu<'a>,
 }
 
@@ -82,53 +87,53 @@ pub trait Renderer {
 
 impl Game<'_> {
     pub fn new<'a>(
-        renderer: &'a mut dyn Renderer,
         ticker: &'a mut Ticker,
     ) -> Game<'a> {
         return Game {
             playing_state: PlayingState::Running,
             tetris: Tetris::new(),
-            renderer,
             ticker,
             pause_menu: Menu::new(Vec::from(["Resume", "Exit"])),
         }
     }
 
-    pub fn update(&mut self, keys: &Vec<Key>, delta_time: &u128) -> bool {
-        let should_close = self.process_input(&keys);
+    pub fn update(&mut self, keys: &Vec<Key>, delta_time: &u128) -> UpdateOutcome {
+        let input_outcome = self.process_input(&keys);
+
+        if input_outcome == UpdateOutcome::Exit {
+            return input_outcome;
+        }
 
         if self.playing_state == PlayingState::Running {
             let should_tick = self.ticker.update(&delta_time);
 
             if should_tick {
                 let move_outcome = self.tetris.move_down_and_stick();
-                if move_outcome == GameOver {
-                    return true;
+                if move_outcome == MoveOutcome::GameOver {
+                    return UpdateOutcome::Exit;
                 }
-                self.render();
+
+                return UpdateOutcome::Render;
             }
         }
 
-        return should_close;
+        return input_outcome;
     }
 
-    pub fn render(&mut self) {
-        let state = Game::state(&self.playing_state, self.tetris.state(), &self.pause_menu);
-        self.renderer.render(&state);
-    }
-
-    fn state<'a>(playing_state: &'a PlayingState, tetris_state: TetrisState, pause_menu: &'a Menu) -> RenderState<'a> {
-        match playing_state {
-            PlayingState::Running => RenderState::Running(tetris_state),
-            PlayingState::Paused => RenderState::Paused(pause_menu),
-            PlayingState::Stopped => RenderState::Paused(pause_menu),
+    pub fn state(&self) -> RenderState {
+        match self.playing_state {
+            PlayingState::Running => RenderState::Running(self.tetris.state()),
+            PlayingState::Paused => RenderState::Paused(&self.pause_menu),
+            PlayingState::Stopped => RenderState::Paused(&self.pause_menu),
         }
     }
 
-    fn process_input(&mut self, keys: &Vec<Key>) -> bool {
+    fn process_input(&mut self, keys: &Vec<Key>) -> UpdateOutcome {
         if keys.contains(&Key::Escape) || keys.contains(&Key::Control) && keys.contains(&Key::C) {
-            return true;
+            return UpdateOutcome::Exit;
         }
+
+        let mut update_outcome: UpdateOutcome = UpdateOutcome::NothingSpecial;
 
         for key in keys {
             match (&self.playing_state, key) {
@@ -142,14 +147,14 @@ impl Game<'_> {
                         Key::X     => self.tetris.try_and_rotate_counterclockwise(),
                         Key::Shift => self.tetris.hold_piece(),
                         Key::Space => self.tetris.slam(),
-                        Key::P     => { self.playing_state = PlayingState::Paused; NothingSpecial },
-                        _          => NothingSpecial,
+                        Key::P     => { self.playing_state = PlayingState::Paused; MoveOutcome::NothingSpecial },
+                        _          => MoveOutcome::NothingSpecial,
                     };
 
                     match move_outcome {
                         MoveOutcome::SpawnedNewPiece     => self.ticker.reset_tick_timer(),
                         MoveOutcome::MadeContactOnBottom => self.ticker.reset_tick_timer(),
-                        MoveOutcome::GameOver => { return true },
+                        MoveOutcome::GameOver => { return UpdateOutcome::Exit },
                         _                                => (),
                     }
                 }
@@ -174,9 +179,9 @@ impl Game<'_> {
                 }
             };
 
-            self.renderer.render(&Game::state(&self.playing_state, self.tetris.state(), &self.pause_menu));
+            update_outcome = UpdateOutcome::Render;
         }
 
-        return false;
+        return update_outcome;
     }
 }
