@@ -71,7 +71,7 @@ impl Menu {
 
 pub struct Game<'a> {
     playing_state: PlayingState,
-    pub tetris: Tetris, // TODO: Private
+    tetris: Tetris,
     ticker: &'a mut Ticker,
     pause_menu: Menu,
 }
