@@ -46,7 +46,7 @@ impl InputSystem {
             keys.push(Key::C);
         }
 
-        if self.current_frame_keys.contains(&Keycode::Left) {
+        if self.current_frame_keys.contains(&Keycode::Left) && !self.current_frame_keys.contains(&Keycode::Right) {
             if self.last_frame_keys.contains(&Keycode::Left) {
                 self.time_since_last_left += delta_time;
                 if self.time_since_last_left > self.key_repeat_interval {
@@ -60,7 +60,7 @@ impl InputSystem {
             self.time_since_last_left = 0;
         }
 
-        if self.current_frame_keys.contains(&Keycode::Right) {
+        if self.current_frame_keys.contains(&Keycode::Right) && !self.current_frame_keys.contains(&Keycode::Left) {
             if self.last_frame_keys.contains(&Keycode::Right) {
                 self.time_since_last_right += delta_time;
                 if self.time_since_last_right > self.key_repeat_interval {
