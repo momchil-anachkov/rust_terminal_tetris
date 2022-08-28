@@ -37,13 +37,13 @@ pub enum UpdateOutcome {
     NothingSpecial,
 }
 
-pub struct Menu <'a> {
-    pub items: Vec<&'a str>,
+pub struct Menu {
+    pub items: Vec<&'static str>,
     pub selected_item: usize,
 }
 
-impl Menu<'_> {
-    pub fn new(items: Vec<&str>) -> Menu {
+impl Menu {
+    pub fn new(items: Vec<&'static str>) -> Menu {
         return Menu {
             items,
             selected_item: 0,
@@ -73,12 +73,12 @@ pub struct Game<'a> {
     playing_state: PlayingState,
     pub tetris: Tetris, // TODO: Private
     ticker: &'a mut Ticker,
-    pause_menu: Menu<'a>,
+    pause_menu: Menu,
 }
 
 pub enum RenderState<'a> {
     Running(TetrisState),
-    Paused(&'a Menu<'a>),
+    Paused(&'a Menu),
 }
 
 pub trait Renderer {
