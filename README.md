@@ -11,14 +11,13 @@ Tetris in the terminal. Written in Rust.
 - ✅ Next pieces sequence
 - ✅ Hold piece
 - ✅ Tick reset on slam
-- ❌ Incrementing speed/levels
-- ❌ 1 second grace time before stick
-- ❌ GIFs for each of the game features
-- ❌ Line clear animation
 - ✅ Play/Pause
-- ❌ Hide Game State on Pause
+- ✅ Menu
+- ❌ Line clear animation
+- ❌ 1 second grace time before stick
+- ❌ Incrementing speed/levels
+- ❌ GIFs for each of the game features
 - ❌ Score System
-- ❌ Menu
 
 ## Code Feature List
 
