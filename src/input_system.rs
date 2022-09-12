@@ -34,7 +34,7 @@ impl InputSystem {
             keys.push(Key::P);
         }
 
-        if self.current_frame_keys.contains(&Keycode::Escape) {
+        if self.is_key_pressed(&Keycode::Escape) {
             keys.push(Key::Escape);
         }
 

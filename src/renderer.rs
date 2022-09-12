@@ -19,12 +19,19 @@ impl Renderer for TerminalRenderer {
             RenderState::Running(tetris_state) => {
                 self.render_tetris_state(&tetris_state);
             }
-            RenderState::Paused(menu) => {
+            RenderState::InMenu(menu) => {
                 execute!(
                     self.stdout,
                     Clear(ClearType::All),
                     MoveToColumn(0),
                     MoveToRow(0),
+                ).unwrap();
+
+                write!(self.stdout, "{}", menu.title).unwrap();
+                execute!(
+                    self.stdout,
+                    MoveToColumn(0),
+                    MoveDown(2),
                 ).unwrap();
 
                 for index in 0..menu.items.len() {
@@ -37,7 +44,7 @@ impl Renderer for TerminalRenderer {
                     execute!(
                         self.stdout,
                         MoveToColumn(0),
-                        MoveDown(0),
+                        MoveDown(1),
                     ).unwrap();
                 }
             }
