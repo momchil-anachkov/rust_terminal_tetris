@@ -1,4 +1,4 @@
-use std::io::{Read, stdout, Stdout};
+use std::io::{Read, stderr, Stdin, stdout, Stdout};
 use std::io::stdin;
 use std::io::Write;
 use crate::core::tetris::TetrisState;
@@ -20,7 +20,6 @@ impl Renderer for TerminalRenderer {
                 self.render_tetris_state(&tetris_state);
             }
             RenderState::Paused(menu) => {
-            // RenderState::Paused() => {
                 execute!(
                     self.stdout,
                     Clear(ClearType::All),
@@ -156,9 +155,9 @@ impl TerminalRenderer {
             Clear(ClearType::All),
         ).unwrap();
 
-        // Be a good neighbor and read the accumulated junk from stdin so you can finish on a clear terminal
-        let mut junk_input = Vec::new();
-        stdin().read(&mut junk_input).unwrap();
+        // Be a good neighbor and read any potentially accumulated junk from stdin
+        // so you can finish on a clear terminal
+        read_until_empty(&mut stdin());
 
         crossterm::terminal::disable_raw_mode().unwrap();
 
@@ -178,4 +177,16 @@ fn char_for_block_type(block_type: &BlockType) -> char {
        BlockType::Ghost => '🤍',
        BlockType::Empty => '🖤',
    }
+}
+
+fn read_until_empty(std_in: &mut Stdin) {
+    let mut junk_input = Vec::new();
+    let mut bytes: usize = 0;
+    loop {
+        bytes = std_in.read(&mut junk_input).unwrap();
+        write!(stderr(), "{}\n", bytes).unwrap();
+        if bytes == 0 {
+            break
+        }
+    }
 }
