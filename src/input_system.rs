@@ -104,6 +104,10 @@ impl InputSystem {
             keys.push(Key::Space);
         }
 
+        if self.is_key_pressed(&Keycode::Enter) {
+            keys.push(Key::Enter);
+        }
+
         if self.is_key_pressed(&Keycode::LShift) {
             keys.push(Key::Shift);
         }

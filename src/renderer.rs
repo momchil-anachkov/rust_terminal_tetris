@@ -29,9 +29,9 @@ impl Renderer for TerminalRenderer {
 
                 for index in 0..menu.items.len() {
                     let format = if index == menu.selected_item {
-                        write!(self.stdout, "* {}", menu.items[index]).unwrap();
+                        write!(self.stdout, "* {}", menu.items[index].label).unwrap();
                     } else {
-                        write!(self.stdout, "  {}", menu.items[index]).unwrap();
+                        write!(self.stdout, "  {}", menu.items[index].label).unwrap();
                     };
 
                     execute!(

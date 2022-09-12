@@ -38,12 +38,24 @@ pub enum UpdateOutcome {
 }
 
 pub struct Menu {
-    pub items: Vec<&'static str>,
+    pub items: Vec<&'static MenuItem>,
     pub selected_item: usize,
 }
 
+enum Command {
+    Pause,
+    Resume,
+    Stop,
+    Quit,
+}
+
+pub struct MenuItem {
+    pub label: &'static str,
+    command: Command,
+}
+
 impl Menu {
-    pub fn new(items: Vec<&'static str>) -> Menu {
+    pub fn new(items: Vec<&'static MenuItem>) -> Menu {
         return Menu {
             items,
             selected_item: 0,
@@ -86,14 +98,16 @@ pub trait Renderer {
 }
 
 impl Game<'_> {
-    pub fn new<'a>(
-        ticker: &'a mut Ticker,
-    ) -> Game<'a> {
+    pub fn new(ticker: &mut Ticker) -> Game {
         return Game {
             playing_state: PlayingState::Running,
             tetris: Tetris::new(),
             ticker,
-            pause_menu: Menu::new(Vec::from(["Resume", "Exit"])),
+            pause_menu: Menu::new(Vec::from([
+                &MenuItem { label: "Resume", command: Command::Resume },
+                &MenuItem { label: "Exit to Main Menu",   command: Command::Quit },
+                &MenuItem { label: "Quit",   command: Command::Quit },
+            ])),
         }
     }
 
@@ -161,10 +175,16 @@ impl Game<'_> {
 
                 (PlayingState::Paused, key) => {
                     match key {
-                        Key::Up   =>  self.pause_menu.move_up(),
-                        Key::Down =>  self.pause_menu.move_down(),
-                        Key::Enter => (/* Select current menu item */),
+                        Key::Up    =>  self.pause_menu.move_up(),
+                        Key::Down  =>  self.pause_menu.move_down(),
                         Key::P     => self.playing_state = PlayingState::Running,
+                        Key::Enter => {
+                            match self.pause_menu.items[self.pause_menu.selected_item].command {
+                                Command::Resume => { self.playing_state = PlayingState::Running }
+                                Command::Quit => { return UpdateOutcome::Exit }
+                                _ => {}
+                            }
+                        }
                         _ => (),
                     }
                 }
