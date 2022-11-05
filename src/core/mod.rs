@@ -87,6 +87,8 @@ impl Menu {
 pub struct Game<'a> {
     playing_state: PlayingState,
     tetris: Tetris,
+    lines_to_next_speed: u8,
+    min_tick_interval: u128,
     ticker: &'a mut Ticker,
     pause_menu: Menu,
     main_menu: Menu,
@@ -106,6 +108,8 @@ impl Game<'_> {
         return Game {
             playing_state: PlayingState::Stopped,
             tetris: Tetris::new(),
+            lines_to_next_speed: 0,
+            min_tick_interval: 100,
             ticker,
             pause_menu: Menu::new("Paused", Vec::from([
                 &MenuItem { label: "Resume",            command: Command::Resume },
@@ -175,7 +179,14 @@ impl Game<'_> {
                     };
 
                     match move_outcome {
-                        MoveOutcome::SpawnedNewPiece     => self.ticker.reset_tick_timer(),
+                        MoveOutcome::SpawnedNewPieceAndClearedLines(cleared_lines) => {
+                            self.lines_to_next_speed += cleared_lines;
+                            if (self.lines_to_next_speed > 10) {
+                                self.lines_to_next_speed -= 10;
+                                self.ticker.increase_tick_speed();
+                            }
+                            self.ticker.reset_tick_timer();
+                        },
                         MoveOutcome::MadeContactOnBottom => self.ticker.reset_tick_timer(),
                         MoveOutcome::GameOver => { return UpdateOutcome::Exit },
                         _                                => (),

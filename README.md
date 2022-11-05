@@ -15,7 +15,7 @@ Tetris in the terminal. Written in Rust.
 - ✅ Menu
 - ❌ Line clear animation
 - ❌ 1 second grace time before stick
-- ❌ Incrementing speed/levels
+- 🟨 Incrementing speed/levels (linear, needs proper curve)
 - ❌ GIFs for each of the game features
 - ❌ Score System
 

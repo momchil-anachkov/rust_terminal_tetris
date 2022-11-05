@@ -8,11 +8,14 @@ use crate::core::{Game, Renderer, UpdateOutcome};
 use crate::input_system::{InputSystem};
 use crate::renderer::TerminalRenderer;
 use crate::core::tetris::Tetris;
-use crate::core::tetris::MoveOutcome::{SpawnedNewPiece};
+use crate::core::tetris::MoveOutcome::{SpawnedNewPieceAndClearedLines};
 use crate::core::ticker::Ticker;
 
-const TICK_INTERVAL_TIME: u128 = 1000000;
-const KEY_REPEAT_INTERVAL: u128 = 100000;
+// Times are in microseconds
+const TICK_INTERVAL_TIME: u128 =       1000000;
+const DELTA_TICK_INTERVAL_TIME: u128 = 100000;
+const MIN_TICK_INTERVAL_TIME: u128 =   100000;
+const KEY_REPEAT_INTERVAL: u128 =      100000;
 
 fn main() -> Result<(), ()> {
     let mut last_frame_start_time: u128 = 0;
@@ -24,7 +27,11 @@ fn main() -> Result<(), ()> {
     TerminalRenderer::setup();
 
     let mut renderer = TerminalRenderer::new();
-    let mut ticker: Ticker = Ticker::new(TICK_INTERVAL_TIME);
+    let mut ticker: Ticker = Ticker::new(
+        TICK_INTERVAL_TIME,
+        MIN_TICK_INTERVAL_TIME,
+        DELTA_TICK_INTERVAL_TIME,
+    );
     let mut game: Game = Game::new(&mut ticker);
 
     let start = time::Instant::now();

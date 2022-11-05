@@ -1,6 +1,6 @@
 use rand::seq::SliceRandom;
 use crate::core::tetris::MoveOutcome::NothingSpecial;
-use crate::SpawnedNewPiece;
+use crate::SpawnedNewPieceAndClearedLines;
 
 pub const BOARD_WIDTH:  usize = 10;
 pub const BOARD_HEIGHT: usize = 20;
@@ -13,7 +13,7 @@ pub struct TetrisState {
 
 #[derive(PartialEq)]
 pub enum MoveOutcome {
-    SpawnedNewPiece,
+    SpawnedNewPieceAndClearedLines(u8),
     GameOver,
     NothingSpecial,
     MadeContactOnBottom,
@@ -162,7 +162,7 @@ impl Tetris {
             }
         }
 
-        return SpawnedNewPiece;
+        return SpawnedNewPieceAndClearedLines(0);
     }
 
     pub fn try_and_rotate_clockwise(self: &mut Tetris) -> MoveOutcome {
@@ -311,22 +311,19 @@ impl Tetris {
         }
     }
 
-    // Just move down, and report if hit bottom
-    // Stick is a separate command
-
     pub fn move_down_and_stick(self: &mut Tetris) -> MoveOutcome {
         self.active_piece.position.y += 1;
 
         if is_invalid_state(&self.active_piece, &self.board) {
             self.active_piece.position.y -= 1;
 
-            self.stick_current_piece();
+            let cleared_lines = self.stick_current_piece();
             self.spawn_next_piece();
 
             if is_invalid_state(&self.active_piece, &self.board) {
                 return MoveOutcome::GameOver;
             } else {
-                return MoveOutcome::SpawnedNewPiece;
+                return MoveOutcome::SpawnedNewPieceAndClearedLines(cleared_lines);
             }
         }
 
@@ -340,24 +337,27 @@ impl Tetris {
             if is_invalid_state(&self.active_piece, &self.board) {
                 self.active_piece.position.y -=1;
 
-                self.stick_current_piece();
+                let cleared_lines = self.stick_current_piece();
                 self.spawn_next_piece();
 
                 if is_invalid_state(&self.active_piece, &self.board) {
                     return MoveOutcome::GameOver;
                 } else {
-                    return MoveOutcome::SpawnedNewPiece;
+                    return MoveOutcome::SpawnedNewPieceAndClearedLines(cleared_lines);
                 }
             }
         }
     }
 
-    fn stick_current_piece(self: &mut Tetris) {
+    fn stick_current_piece(self: &mut Tetris) -> u8 {
         Tetris::stick_piece_to_board(&self.active_piece, &mut self.board);
-        Tetris::clear_full_lines(&mut self.board);
+        let cleared_lines = Tetris::clear_full_lines(&mut self.board);
+        return cleared_lines;
     }
 
-    fn clear_full_lines(board: &mut Board) {
+    fn clear_full_lines(board: &mut Board) -> u8 {
+        let mut cleared_lines: u8 = 0;
+
         // Scan all the lines down
         for line_index in 0..board.blocks.len() {
             let line = board.blocks[line_index];
@@ -381,8 +381,12 @@ impl Tetris {
                 for column_index in 0..line.len() {
                     board.blocks[0][column_index].block_type = BlockType::Empty;
                 }
+
+                cleared_lines += 1;
             }
         }
+
+        return cleared_lines;
     }
 
     fn stick_piece_to_board(piece: &Piece, board: &mut Board) {
