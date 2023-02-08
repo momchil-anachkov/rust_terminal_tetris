@@ -2,6 +2,13 @@
 
 Tetris in the terminal. Written in Rust.
 
+##
+
+```shell
+git clone https://github.com/momchil-anachkov/rust_terminal_tetris.git
+cargo run
+```
+
 ## Game Feature List:
 
 - ✅ Basic tetris
@@ -13,9 +20,8 @@ Tetris in the terminal. Written in Rust.
 - ✅ Tick reset on slam
 - ✅ Play/Pause
 - ✅ Menu
-- ❌ Line clear animation
+- ✅ Incrementing speed/levels (linear, needs proper curve)
 - ❌ 1 second grace time before stick
-- 🟨 Incrementing speed/levels (linear, needs proper curve)
 - ❌ GIFs for each of the game features
 - ❌ Score System
 

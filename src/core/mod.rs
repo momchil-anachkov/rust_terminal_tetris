@@ -1,8 +1,10 @@
 pub mod tetris;
 pub mod ticker;
+pub mod levels;
 
 use tetris::TetrisState;
 use crate::{InputSystem, Tetris};
+use crate::core::levels::Levels;
 use crate::core::tetris::MoveOutcome;
 use crate::core::ticker::Ticker;
 
@@ -88,6 +90,7 @@ pub struct Game<'a> {
     playing_state: PlayingState,
     tetris: Tetris,
     lines_to_next_speed: u8,
+    levels: Levels,
     min_tick_interval: u128,
     ticker: &'a mut Ticker,
     pause_menu: Menu,
@@ -110,6 +113,7 @@ impl Game<'_> {
             tetris: Tetris::new(),
             lines_to_next_speed: 0,
             min_tick_interval: 100,
+            levels: Levels::classic(),
             ticker,
             pause_menu: Menu::new("Paused", Vec::from([
                 &MenuItem { label: "Resume",            command: Command::Resume },
@@ -127,7 +131,7 @@ impl Game<'_> {
         let input_outcome = self.process_input(&keys);
 
         if input_outcome == UpdateOutcome::Exit {
-            return input_outcome;
+            return UpdateOutcome::Exit;
         }
 
         if self.playing_state == PlayingState::Running {
@@ -181,7 +185,7 @@ impl Game<'_> {
                     match move_outcome {
                         MoveOutcome::SpawnedNewPieceAndClearedLines(cleared_lines) => {
                             self.lines_to_next_speed += cleared_lines;
-                            if (self.lines_to_next_speed > 10) {
+                            if self.lines_to_next_speed > 10 {
                                 self.lines_to_next_speed -= 10;
                                 self.ticker.increase_tick_speed();
                             }

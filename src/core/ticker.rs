@@ -29,7 +29,7 @@ impl Ticker {
 
     pub fn increase_tick_speed(&mut self) {
         let new_interval = self.tick_interval_time - self.tick_interval_delta;
-        if (new_interval < self.min_tick_interval_time) {
+        if new_interval < self.min_tick_interval_time {
             self.tick_interval_time = self.min_tick_interval_time;
         } else {
             self.tick_interval_time = new_interval;
