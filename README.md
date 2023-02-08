@@ -20,7 +20,7 @@ cargo run
 - ✅ Tick reset on slam
 - ✅ Play/Pause
 - ✅ Menu
-- ✅ Incrementing speed/levels (linear, needs proper curve)
+- ✅ Incrementing speed/levels (classic tetris speed scale)
 - ❌ 1 second grace time before stick
 - ❌ GIFs for each of the game features
 - ❌ Score System
