@@ -2,6 +2,8 @@
 
 Tetris in the terminal. Written in Rust.
 
+![Project Showcase](showcase.gif)
+
 ##
 
 ```shell
